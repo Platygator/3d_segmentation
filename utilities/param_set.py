@@ -22,4 +22,4 @@ DIST_MAT = np.array([-0.46465317710098897, 0.2987490394355827, 0.004075959465516
 HEIGHT = 1080
 WIDTH = 1440
 
-DATA_PATH = "/Users/jan/Box/Period 2/Simulation/project/3d_segmentation/data"
+DATA_PATH = "data"
