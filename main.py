@@ -17,13 +17,18 @@ import numpy as np
 
 from utilities import *
 
-step = 0.5
-k = 53
-normal_direction = np.array([-1, 0, 2])
 rotation_initial = [5, 142, 0]
 translation_initial = [0.0, 0.0, 4.5]
-generate_new_filtered = True
 
+normal_direction = np.array([-1, 0, 2])
+step = 0.5
+k = 53
+
+growth_rate = 5
+
+
+generate_new_filtered = False
+visualization = False
 
 # FILTER
 if generate_new_filtered:
@@ -51,9 +56,10 @@ if generate_new_filtered:
     o3d.io.write_point_cloud("data/point_clouds/filtered_reconstruction_1.ply", cloud)
 else:
     # load
-    cloud = o3d.io.read_point_cloud("filtered_reconstruction_1.ply")
+    cloud = o3d.io.read_point_cloud("data/point_clouds/filtered_reconstruction_1.ply")
     
 # CLUSTER
+cloud.estimate_normals()
 
 reoriented_normals = reorient_normals(normals=cloud.normals, direction=normal_direction)
 cloud.normals = reoriented_normals
@@ -71,10 +77,11 @@ cloud.points = normal_moved_back
 for image, position, depth_map, name in load_images():
     projection = reproject(points=cloud.points, color=cloud.colors, label=labels,
                            transformation_mat=np.eye(4), depth_map=depth_map)
-    label = generate_label(projection=projection, original=image, growth_rate=5)
+    label = generate_label(projection=projection, original=image, growth_rate=growth_rate)
     save_label(label_name=name, label=label)
 
 # VISUALIZATION
-origin_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
-    size=2, origin=[0, 0, 0])
-o3d.visualization.draw_geometries([cloud, origin_frame], width=3000, height=1800)
+if visualization:
+    origin_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
+        size=2, origin=[0, 0, 0])
+    o3d.visualization.draw_geometries([cloud, origin_frame], width=3000, height=1800)
