@@ -11,12 +11,11 @@ Library version:
 
 
 """
-import numpy as np
 import open3d as o3d
 import cv2
 from sklearn.cluster import KMeans as km
 
-from .general_functions import turn_ply_to_npy, turn_npy_to_ply
+from .general_functions import turn_ply_to_npy
 from .param_set import *
 
 
@@ -66,7 +65,6 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
         pixel = pixel[0]
         if 0 < pixel[0] < height and 0 < pixel[1] < width:
             save_index[pixel[0], pixel[1]] = i+1
-
 
     # based on the closest index, select the respective color
     color = np.concatenate([np.zeros([1, 3]), color], axis=0)
