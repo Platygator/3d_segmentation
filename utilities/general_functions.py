@@ -16,6 +16,7 @@ import open3d as o3d
 
 import cv2
 from os.path import basename
+from os import mkdir
 from glob import glob
 from .param_set import DATA_PATH
 
@@ -23,6 +24,11 @@ IMAGES = "/images"
 DEPTH = "/depth"
 POSITIONS = "/positions"
 LABELS = "/labels"
+
+try:
+    mkdir(DATA_PATH + "/labels")
+except FileExistsError:
+    pass
 
 
 def turn_ply_to_npy(func):
