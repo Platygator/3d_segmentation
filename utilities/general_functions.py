@@ -20,10 +20,10 @@ from os import mkdir
 from glob import glob
 from .param_set import DATA_PATH
 
-IMAGES = "/images"
-DEPTH = "/depth"
-POSITIONS = "/positions"
-LABELS = "/labels"
+IMAGES = "/images/"
+DEPTH = "/depth/"
+POSITIONS = "/positions/"
+LABELS = "/labels/"
 
 try:
     mkdir(DATA_PATH + "/labels")
@@ -89,7 +89,7 @@ def load_images(data_path: str = DATA_PATH) -> [np.ndarray, np.ndarray]:
     for name in instance_names:
         image = cv2.imread(data_path + IMAGES + name + '.png', 1)
         position = np.load(data_path + POSITIONS + name + '.npy')
-        depth = cv2.imread(data_path + DEPTH + name + '.png', 1)
+        depth = cv2.imread(data_path + DEPTH + name + '.png', 0)
         yield image, position, depth, name
 
 
