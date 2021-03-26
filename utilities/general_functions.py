@@ -16,19 +16,19 @@ import open3d as o3d
 
 import cv2
 from os.path import basename
-from os import mkdir
+# from os import mkdir
 from glob import glob
 from .param_set import DATA_PATH
 
 IMAGES = "/images/"
 DEPTH = "/depth/"
 POSITIONS = "/positions/"
-LABELS = "/labels/"
-
-try:
-    mkdir(DATA_PATH + "/labels")
-except FileExistsError:
-    pass
+# LABELS = "/labels/"
+#
+# try:
+#     mkdir(DATA_PATH + "/labels")
+# except FileExistsError:
+#     pass
 
 
 def turn_ply_to_npy(func):
@@ -93,5 +93,5 @@ def load_images(data_path: str = DATA_PATH) -> [np.ndarray, np.ndarray]:
         yield image, position, depth, name
 
 
-def save_label(label_name: str, label: np.ndarray, data_path: str = DATA_PATH):
-    cv2.imwrite(data_path + label_name + '.png', label)
+# def save_label(label_name: str, label: np.ndarray, data_path: str = DATA_PATH):
+#     cv2.imwrite(data_path + label_name + '.png', label)
