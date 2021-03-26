@@ -98,7 +98,7 @@ def delete_radius(points: np.ndarray, radius: float) -> np.ndarray:
 
 
 def remove_statistical_outliers(cloud: o3d.geometry.PointCloud,
-                                nb_neighbors: int, std_ratio: float) -> o3d.geometry.PointCloud:
+                                nb_neighbors: int, std_ratio: float) -> o3d.geometry.PointCloud():
     """
     Wrapping around remove_statistical_outliers function
     :param cloud:
