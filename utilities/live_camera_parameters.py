@@ -4,7 +4,7 @@ jan.schiffeler[at]gmail.com
 
 Changed by
 
-
+Parameters for my camera settings
 
 Python 3.8
 Library version:

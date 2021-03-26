@@ -4,7 +4,7 @@ jan.schiffeler[at]gmail.com
 
 Changed by
 
-
+Segmentation of boulders using 3D reconstruction point clouds [photogrammetry]
 
 Python 3.8
 Library version:
@@ -34,7 +34,7 @@ visualization = False
 
 # FILTER
 if generate_new_filtered:
-    cloud = o3d.io.read_point_cloud("data/point_clouds/reconstruction_1.ply")
+    cloud = o3d.io.read_point_cloud("data/pointclouds/reconstruction_1.ply")
 
     # remove outliers
     cloud = remove_statistical_outliers(cloud=cloud,  nb_neighbors=nb_neighbors, std_ratio=std_ratio)
@@ -55,10 +55,10 @@ if generate_new_filtered:
     cloud.rotate(np.linalg.inv(R), np.array([0, 0, 0]))
 
     # save
-    o3d.io.write_point_cloud("data/point_clouds/filtered_reconstruction_1.ply", cloud)
+    o3d.io.write_point_cloud("data/pointclouds/filtered_reconstruction_1.ply", cloud)
 else:
     # load
-    cloud = o3d.io.read_point_cloud("data/point_clouds/filtered_reconstruction_1.ply")
+    cloud = o3d.io.read_point_cloud("data/pointclouds/filtered_reconstruction_1.ply")
     
 # CLUSTER
 cloud.estimate_normals()

@@ -4,7 +4,7 @@ jan.schiffeler[at]gmail.com
 
 Changed by
 
-
+General utility functions, data loader, wrapper, etc
 
 Python 3.8
 Library version:
@@ -18,7 +18,7 @@ import cv2
 from os.path import basename
 # from os import mkdir
 from glob import glob
-from .param_set import DATA_PATH
+from .live_camera_parameters import DATA_PATH
 
 IMAGES = "/images/"
 DEPTH = "/depth/"
@@ -32,6 +32,11 @@ POSITIONS = "/positions/"
 
 
 def turn_ply_to_npy(func):
+    """
+    wrapper to transform point_cloud data type to numpy
+    :param func: function
+    :return: wrapped function
+    """
 
     def wrap(**kwargs):
         # check keys
@@ -51,7 +56,11 @@ def turn_ply_to_npy(func):
 
 
 def turn_npy_to_ply(func):
-
+    """
+    wrapper to transform numpy to point_cloud data type
+    :param func: function
+    :return: wrapped function
+    """
     def wrap(**kwargs):
         result_npy = func(**kwargs)
         result = o3d.utility.Vector3dVector(result_npy)
@@ -85,12 +94,17 @@ def rotation_matrix(roll: float, pitch: float, yaw: float) -> np.ndarray:
 
 
 def load_images(data_path: str = DATA_PATH) -> [np.ndarray, np.ndarray]:
+    """
+    Generator to load all images and there respective data from the data_path folder
+    :param data_path: folder containing depth, images, masks, positions, pointclouds
+    :return: yield, image, position, depth_map and name
+    """
     instance_names = [basename(k)[:-4] for k in glob(f'{data_path + IMAGES}*.png')]
     for name in instance_names:
         image = cv2.imread(data_path + IMAGES + name + '.png', 1)
         position = np.load(data_path + POSITIONS + name + '.npy')
-        depth = cv2.imread(data_path + DEPTH + name + '.png', 0)
-        yield image, position, depth, name
+        depth_map = cv2.imread(data_path + DEPTH + name + '.png', 0)
+        yield image, position, depth_map, name
 
 
 # def save_label(label_name: str, label: np.ndarray, data_path: str = DATA_PATH):

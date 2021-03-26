@@ -4,7 +4,7 @@ jan.schiffeler[at]gmail.com
 
 Changed by
 
-
+Different clustering and label generation functions
 
 Python 3.8
 Library version:
@@ -16,7 +16,7 @@ import cv2
 from sklearn.cluster import KMeans as km
 
 from .general_functions import turn_ply_to_npy
-from .param_set import *
+from .live_camera_parameters import *
 
 from os import mkdir
 
@@ -29,14 +29,14 @@ except FileExistsError:
     pass
 
 
-def crf_inference_label(img, mask, t, n_classes):
+def crf_inference_label(img: np.ndarray, mask: np.ndarray, t: int, n_classes: int) -> np.ndarray:
     """
     Based on this dudes code: https://github.com/seth814/Semantic-Shapes/blob/master/CRF%20Cat%20Demo.ipynb
-    :param img:
-    :param mask:
-    :param t:
-    :param n_classes:
-    :return:
+    :param img: original image
+    :param mask: label mask
+    :param t: UNKNOWN! TODO find out
+    :param n_classes: number of classes (actually always 2 here)
+    :return: refined label image
     """
 
     not_mask = cv2.bitwise_not(mask)
@@ -61,7 +61,8 @@ def crf_inference_label(img, mask, t, n_classes):
                            normalization=dcrf.NORMALIZE_SYMMETRIC)
     Q = d.inference(t)
     res = np.argmax(Q, axis=0).reshape((img.shape[0], img.shape[1]))
-    return res
+    res *= 255
+    return res.astype('uint8')
 
 
 @turn_ply_to_npy
@@ -85,19 +86,20 @@ def km_cluster(points: np.ndarray, k: int) -> [o3d.utility.Vector3dVector, np.nd
 def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
               transformation_mat: np.ndarray, depth_map: np.ndarray,
               cam_mat: np.ndarray = CAM_MAT, dist_map: np.ndarray = DIST_MAT,
-              height: int = HEIGHT, width: int = WIDTH) -> np.ndarray:
+              height: int = HEIGHT, width: int = WIDTH, save_img: bool = False) -> np.ndarray:
     """
     Project all point cloud points into the image scene pixel points
-    :param points:
-    :param color:
-    :param label:
-    :param transformation_mat:
-    :param depth_map:
-    :param cam_mat:
-    :param dist_mat:
-    :param height:
-    :param width:
-    :return:
+    :param points: 3D point coordinates
+    :param color: color vector for each point
+    :param label: label for each point
+    :param transformation_mat: transformation of the current camera location
+    :param depth_map: depth map of image
+    :param cam_mat: camera matrix
+    :param dist_mat: distortion matrix [k1, k2, p1, p2]
+    :param height: img height
+    :param width: img width
+    :param save_img: save label and visual image for debugging
+    :return: image where each pixel has a label [0 = background]
     """
 
     rvec = cv2.Rodrigues(transformation_mat[:3, :3])
@@ -116,15 +118,26 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
     # based on the closest index, select the respective color
     color = np.concatenate([np.zeros([1, 3]), color], axis=0)
     label = np.concatenate([np.zeros([1]), label+1], axis=0)
-    reprojection_visual = color[save_index]
     reprojection = label[save_index]
-    cv2.imwrite("label_projection.png", reprojection)
-    cv2.imwrite("visual_projection.png", np.floor(reprojection_visual*255).astype('uint8'))
+    if save_img:
+        reprojection_visual = color[save_index]
+        cv2.imwrite("label_projection.png", reprojection)
+        cv2.imwrite("visual_projection.png", np.floor(reprojection_visual*255).astype('uint8'))
     return reprojection
 
 
 def generate_label(projection: np.ndarray, original: np.ndarray, growth_rate: int, name: str,
                    min_number: int, data_path: str = DATA_PATH) -> np.ndarray:
+    """
+    Generate masks for each label instance (similar to blender mask output)
+    :param projection: image with instance label for each pixel [0 = background]
+    :param original: original image
+    :param growth_rate: number of dilation steps
+    :param name: name of the current image
+    :param min_number: minimum number of instanced of one label
+    :param data_path: folder containing depth, images, masks, positions, pointclouds
+    :return: save mask images to separate folders in masks
+    """
     labels_present, counts = np.unique(projection, return_counts=True)
     filter_small = counts < min_number
     labels_present = np.delete(labels_present, filter_small, 0)
@@ -139,7 +152,6 @@ def generate_label(projection: np.ndarray, original: np.ndarray, growth_rate: in
         instance = np.zeros_like(projection)
         instance[np.where(projection == i)] = 255
         instance = cv2.dilate(instance, np.ones((5, 5), 'uint8'), iterations=growth_rate)
-        label = crf_inference_label(original, instance, 10, 2) * 255
-        label = label.astype('uint8')
+        label = crf_inference_label(original, instance, 10, 2)
 
         cv2.imwrite(mask_dir + name + ".png", label)
