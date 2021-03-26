@@ -23,6 +23,11 @@ from os import mkdir
 import pydensecrf.densecrf as dcrf
 from pydensecrf.utils import unary_from_labels, unary_from_softmax
 
+try:
+    mkdir(DATA_PATH + "/masks")
+except FileExistsError:
+    pass
+
 
 def crf_inference_label(img, mask, t, n_classes):
     """
@@ -126,19 +131,15 @@ def generate_label(projection: np.ndarray, original: np.ndarray, growth_rate: in
     labels_present = np.delete(labels_present, 0)
 
     for i in labels_present:
-        mask_dir = data_path + f"/masks/mask{i+1}"
+        mask_dir = data_path + f"/masks/mask{int(i)}"
         try:
             mkdir(mask_dir)
         except FileExistsError:
             pass
-
-    for i, label in enumerate(labels_present):
         instance = np.zeros_like(projection)
-        instance[np.where(projection == label)] = 255
+        instance[np.where(projection == i)] = 255
         instance = cv2.dilate(instance, np.ones((5, 5), 'uint8'), iterations=growth_rate)
         label = crf_inference_label(original, instance, 10, 2) * 255
         label = label.astype('uint8')
-
-        mask_dir = data_path + f"/masks/mask{i+1}/"
 
         cv2.imwrite(mask_dir + name + ".png", label)
