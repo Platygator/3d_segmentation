@@ -85,7 +85,8 @@ def km_cluster(points: np.ndarray, k: int) -> [o3d.utility.Vector3dVector, np.nd
 @turn_ply_to_npy
 def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
               transformation_mat: np.ndarray, depth_map: np.ndarray,
-              cam_mat: np.ndarray = CAM_MAT, dist_map: np.ndarray = DIST_MAT,
+              depth_range: float, distance_map: np.ndarray,
+              cam_mat: np.ndarray = CAM_MAT, dist_mat: np.ndarray = DIST_MAT,
               height: int = HEIGHT, width: int = WIDTH, save_img: bool = False) -> np.ndarray:
     """
     Project all point cloud points into the image scene pixel points
@@ -104,17 +105,20 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
 
     rvec = cv2.Rodrigues(transformation_mat[:3, :3])
     cv_projection = cv2.projectPoints(objectPoints=points, rvec=rvec[0], tvec=transformation_mat[:3, 3], cameraMatrix=cam_mat,
-                                      distCoeffs=dist_map)
+                                      distCoeffs=dist_mat)
 
     pixels_cv = np.rint(cv_projection[0]).astype('int')
 
     save_index = np.zeros([height, width], dtype='uint')
     for i, pixel in enumerate(pixels_cv):
-        pixel = pixel[0]
-        if 0 < pixel[0] < height and 0 < pixel[1] < width:
-            save_index[pixel[0], pixel[1]] = i+1
+        x, y = pixel[0]
+        if 0 < x < height and 0 < y < width:
+            # TODO check if distance check for occlusion is working
+            dist = distance_map[x, y]
+            depth = depth_map[x, y]
+            if abs(dist - depth) <= depth_range:
+                save_index[x, y] = i+1
 
-    # TODO add distance check for occlusion
     # based on the closest index, select the respective color
     color = np.concatenate([np.zeros([1, 3]), color], axis=0)
     label = np.concatenate([np.zeros([1]), label+1], axis=0)
