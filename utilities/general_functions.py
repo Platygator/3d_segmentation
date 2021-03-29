@@ -18,11 +18,14 @@ import cv2
 from os.path import basename
 # from os import mkdir
 from glob import glob
-from .live_camera_parameters import DATA_PATH
+from .live_camera_parameters import DATA_PATH, EXP_N
 
 IMAGES = "/images/"
 DEPTH = "/depth/"
 POSITIONS = "/positions/"
+POSE_DIC = DATA_PATH + POSITIONS + f"reconstruction_{EXP_N}.npy"
+POSE_DIC = np.load(POSE_DIC, allow_pickle=True).item()
+
 # LABELS = "/labels/"
 #
 # try:
@@ -93,7 +96,7 @@ def rotation_matrix(roll: float, pitch: float, yaw: float) -> np.ndarray:
     return np.dot(R_z, np.dot(R_y, R_x)).T
 
 
-def load_images(data_path: str = DATA_PATH) -> [np.ndarray, np.ndarray]:
+def load_images(data_path: str = DATA_PATH, positions: {str : np.array} = POSE_DIC) -> [np.ndarray, np.ndarray]:
     """
     Generator to load all images and there respective data from the data_path folder
     :param data_path: folder containing depth, images, masks, positions, pointclouds
@@ -102,8 +105,10 @@ def load_images(data_path: str = DATA_PATH) -> [np.ndarray, np.ndarray]:
     instance_names = [basename(k)[:-4] for k in glob(f'{data_path + IMAGES}*.png')]
     for name in instance_names:
         image = cv2.imread(data_path + IMAGES + name + '.png', 1)
-        position = np.load(data_path + POSITIONS + name + '.npy')
-        depth_map = cv2.imread(data_path + DEPTH + name + '.png', 0)
+        # depth_map = cv2.imread(data_path + DEPTH + name + '.png', 0)
+        # TODO import real one
+        depth_map = np.zeros_like(image)
+        position = positions[name]
         yield image, position, depth_map, name
 
 
