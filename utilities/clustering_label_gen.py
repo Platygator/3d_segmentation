@@ -13,7 +13,9 @@ Library version:
 """
 import open3d as o3d
 import cv2
-from sklearn.cluster import KMeans as km
+from sklearn.cluster import KMeans
+from sklearn.cluster import DBSCAN
+from sklearn.mixture import GaussianMixture
 
 from .general_functions import turn_ply_to_npy
 from .live_camera_parameters import *
@@ -73,10 +75,36 @@ def km_cluster(points: np.ndarray, k: int) -> [o3d.utility.Vector3dVector, np.nd
     :param k:
     :return:
     """
-    kmeans = km(n_clusters=k)
+    kmeans = KMeans(n_clusters=k)
     kmeans.fit(points)
     label = kmeans.labels_
     rand_col = np.random.random([k, 3])
+    coloured_points = rand_col[label]
+
+    return o3d.utility.Vector3dVector(coloured_points), label
+
+
+@turn_ply_to_npy
+def gmm_cluster(points: np.ndarray):
+    # TODO write method
+    gausmmix = GaussianMixture(n_components=3, random_state=0)
+    gausmmix.fit(points)
+
+
+@turn_ply_to_npy
+def dbscan_cluster(points: np.ndarray, epsilon: float) -> [o3d.utility.Vector3dVector, np.ndarray]:
+    """
+    Using dbscan to cluster point cloud
+    :param points:
+    :return:
+    """
+    db = DBSCAN(eps=epsilon, min_samples=2)
+    print("[INFO] Fitting DBSCAN")
+    db.fit(points)
+    print("[INFO] Done")
+    label = db.labels_
+    n_clusters_ = len(set(label)) - (1 if -1 in label else 0)
+    rand_col = np.random.random([n_clusters_, 3])
     coloured_points = rand_col[label]
 
     return o3d.utility.Vector3dVector(coloured_points), label
@@ -95,6 +123,8 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
     :param label: label for each point
     :param transformation_mat: transformation of the current camera location
     :param depth_map: depth map of image
+    :param depth_range: acceptable deviation between distance and depth
+    :param distance_map: distance from all points to camera center point
     :param cam_mat: camera matrix
     :param dist_mat: distortion matrix [k1, k2, p1, p2]
     :param height: img height
@@ -104,12 +134,12 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
     """
 
     rvec = cv2.Rodrigues(transformation_mat[:3, :3])
-    cv_projection = cv2.projectPoints(objectPoints=points, rvec=rvec[0], tvec=transformation_mat[:3, 3], cameraMatrix=cam_mat,
-                                      distCoeffs=dist_mat)
+    cv_projection = cv2.projectPoints(objectPoints=points, rvec=rvec[0], tvec=transformation_mat[:3, 3],
+                                      cameraMatrix=cam_mat, distCoeffs=dist_mat)
 
-    pixels_cv = np.rint(cv_projection[0]).astype('int')
+    pixels_cv = np.rint(cv_projection[0]).astype('uint8')
 
-    save_index = np.zeros([height, width], dtype='uint')
+    save_index = np.zeros([height, width], dtype='uint8')
     for i, pixel in enumerate(pixels_cv):
         x, y = pixel[0]
         if 0 < x < height and 0 < y < width:
@@ -131,7 +161,7 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
 
 
 def generate_label(projection: np.ndarray, original: np.ndarray, growth_rate: int, name: str,
-                   min_number: int, data_path: str = DATA_PATH) -> np.ndarray:
+                   min_number: int, data_path: str = DATA_PATH):
     """
     Generate masks for each label instance (similar to blender mask output)
     :param projection: image with instance label for each pixel [0 = background]
