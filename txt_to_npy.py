@@ -9,17 +9,21 @@ Changed by
 Python 3.
 Library version:
 
-TODO: - drop all lines not ending on .png
-      - find re to get positions
-      - save as dictionary
 
 """
 
 import numpy as np
-import re
 
 colmap_images_file = "data/positions/images.txt"
 
+save_dic = {}
+
 with open(colmap_images_file) as file:
     for line in file.readlines():
-        print(line)
+        if line.endswith(".png\n"):
+            _, tx, ty, tz, rx, ry, rz, rw, _, name = line.split(" ")
+            vec = np.array([float(k) for k in [tx, ty, tz, rx, ry, rz, rw]])
+            name = name[:-5]
+            save_dic[name] = vec
+
+np.save("data/positions/reconstruction_2.npy", save_dic)
