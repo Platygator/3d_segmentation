@@ -30,8 +30,8 @@ normal_direction = np.array([-1, 0, 2])
 step = 0.5
 
 # chose cluster method
-# cluster_method = "kmeans"
-cluster_method = "dbscan"
+cluster_method = "kmeans"
+# cluster_method = "dbscan"
 
 # kmeans param
 k = 53
@@ -49,7 +49,7 @@ visualization = True
 
 # FILTER
 if generate_new_filtered:
-    cloud = o3d.io.read_point_cloud("data/pointclouds/reconstruction_1.ply")
+    cloud = o3d.io.read_point_cloud("data/pointclouds/reconstruction_2.ply")
 
     # remove outliers
     cloud = remove_statistical_outliers(cloud=cloud,  nb_neighbors=nb_neighbors, std_ratio=std_ratio)
@@ -60,7 +60,7 @@ if generate_new_filtered:
     # cloud.translate(translation_initial)
 
     # remove floor
-    cloud.points = delete_below(points=cloud.points, threshold=5.0)
+    # cloud.points = delete_below(points=cloud.points, threshold=5.0)
 
     # remove outliers
     cloud = remove_statistical_outliers(cloud=cloud,  nb_neighbors=nb_neighbors, std_ratio=std_ratio)
@@ -70,10 +70,10 @@ if generate_new_filtered:
     cloud.rotate(np.linalg.inv(R), np.array([0, 0, 0]))
 
     # save
-    o3d.io.write_point_cloud("data/pointclouds/filtered_reconstruction_1.ply", cloud)
+    o3d.io.write_point_cloud("data/pointclouds/filtered_reconstruction_2.ply", cloud)
 else:
     # load
-    cloud = o3d.io.read_point_cloud("data/pointclouds/filtered_reconstruction_1.ply")
+    cloud = o3d.io.read_point_cloud("data/pointclouds/filtered_reconstruction_2.ply")
     
 # CLUSTER
 if generate_new_cluster:
@@ -97,11 +97,11 @@ if generate_new_cluster:
     cloud.points = normal_moved_back
 
     # save
-    o3d.io.write_point_cloud(f"data/pointclouds/{cluster_method}_clustered_reconstruction_1.ply", cloud)
+    o3d.io.write_point_cloud(f"data/pointclouds/{cluster_method}_clustered_reconstruction_2.ply", cloud)
     np.save(f"data/pointclouds/{cluster_method}_labels.npy", labels)
 else:
     # load
-    cloud = o3d.io.read_point_cloud("data/pointclouds/clustered_{cluster_method}_reconstruction_1.ply")
+    cloud = o3d.io.read_point_cloud("data/pointclouds/clustered_{cluster_method}_reconstruction_2.ply")
     labels = np.load(f"data/pointclouds/{cluster_method}_labels.npy")
 
 # PROJECTION
