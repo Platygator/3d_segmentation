@@ -144,7 +144,7 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
     save_index = np.zeros([height, width], dtype='uint')
 
     for i, pixel in enumerate(pixels_cv):
-        x, y = pixel[0]
+        y, x = pixel[0]
         if 0 < x < height and 0 < y < width:
             dist = distance_map[i]
             depth = depth_map[x, y]
