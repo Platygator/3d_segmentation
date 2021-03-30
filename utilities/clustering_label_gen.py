@@ -78,6 +78,7 @@ def km_cluster(points: np.ndarray, k: int) -> [o3d.utility.Vector3dVector, np.nd
     kmeans = KMeans(n_clusters=k)
     kmeans.fit(points)
     label = kmeans.labels_
+    np.random.seed(5)
     rand_col = np.random.random([k, 3])
     coloured_points = rand_col[label]
 
@@ -113,7 +114,7 @@ def dbscan_cluster(points: np.ndarray, epsilon: float) -> [o3d.utility.Vector3dV
 @turn_ply_to_npy
 def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
               transformation_mat: np.ndarray, depth_map: np.ndarray,
-              depth_range: float, distance_map: np.ndarray,
+              depth_range: float, distance_map: np.ndarray, name: str,
               cam_mat: np.ndarray = CAM_MAT, dist_mat: np.ndarray = DIST_MAT,
               height: int = HEIGHT, width: int = WIDTH, save_img: bool = False) -> np.ndarray:
     """
@@ -125,6 +126,7 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
     :param depth_map: depth map of image
     :param depth_range: acceptable deviation between distance and depth
     :param distance_map: distance from all points to camera center point
+    :param name: image name
     :param cam_mat: camera matrix
     :param dist_mat: distortion matrix [k1, k2, p1, p2]
     :param height: img height
@@ -157,8 +159,9 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
 
     if save_img:
         reprojection_visual = color[save_index]
-        cv2.imwrite("label_projection.png", reprojection)
-        cv2.imwrite("visual_projection.png", np.floor(reprojection_visual*255).astype('uint8'))
+        print("[INFO] Saving debug images")
+        cv2.imwrite(f"debug_images/label_projection_{name}.png", reprojection)
+        cv2.imwrite(f"debug_images/visual_projection_{name}.png", np.floor(reprojection_visual*255).astype('uint8'))
 
     return reprojection
 
