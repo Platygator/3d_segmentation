@@ -9,6 +9,11 @@ Segmentation of boulders using 3D reconstruction point clouds [photogrammetry]
 Python 3.8
 Library version:
 
+    TODO Checklist wrong projection:
+         - FACT: Frames are located wrongly
+         - Checked: Quaternion rotation inline with other tools
+         - Images and Camera positions are not aligned (colmap problem)
+         - Projection wrong (check alignment with frames, dense reconstruction might help debugging)
 
 """
 
@@ -17,6 +22,7 @@ import numpy as np
 
 from utilities import *
 
+exp_number = 2
 # rouge filter
 nb_neighbors = 20
 std_ratio = 1.0
@@ -45,40 +51,43 @@ min_number = 5
 depth_range = 1000  # allowed deviation from a point to the depth map
 
 generate_new_filtered = False
-generate_new_cluster = True
-visualization = False
+generate_new_cluster = False
+visualization = True
+
+if visualization:
+    origin_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
+        size=3, origin=[0, 0, 0])
 
 # FILTER
 if generate_new_filtered:
-    cloud = o3d.io.read_point_cloud("data/pointclouds/reconstruction_2.ply")
+    cloud = o3d.io.read_point_cloud(f"data/pointclouds/reconstruction_{exp_number}.ply")
 
     # remove outliers
     cloud = remove_statistical_outliers(cloud=cloud,  nb_neighbors=nb_neighbors, std_ratio=std_ratio)
 
-    # reorient for easier floor filtering
-    R = rotation_matrix(*[float(k)*np.pi/180 for k in rotation_initial])
-    cloud.rotate(R, np.array([0, 0, 0]))
-    cloud.translate(translation_initial)
-
-    # remove floor
-    cloud.points = delete_below(points=cloud.points, threshold=0.5)
-
-    # remove outliers
-    cloud = remove_statistical_outliers(cloud=cloud,  nb_neighbors=nb_neighbors, std_ratio=std_ratio)
-
-    # rotate back
-    cloud.translate([-k for k in translation_initial])
-    cloud.rotate(np.linalg.inv(R), np.array([0, 0, 0]))
+    # # reorient for easier floor filtering
+    # R = rotation_matrix(*[float(k)*np.pi/180 for k in rotation_initial])
+    # cloud.rotate(R, np.array([0, 0, 0]))
+    # cloud.translate(translation_initial)
+    #
+    # # remove floor
+    # cloud.points = delete_below(points=cloud.points, threshold=0.5)
+    #
+    # # remove outliers
+    # cloud = remove_statistical_outliers(cloud=cloud,  nb_neighbors=nb_neighbors, std_ratio=std_ratio)
+    #
+    # # rotate back
+    # cloud.translate([-k for k in translation_initial])
+    # cloud.rotate(np.linalg.inv(R), np.array([0, 0, 0]))
 
     # save
-    o3d.io.write_point_cloud("data/pointclouds/filtered_reconstruction_2.ply", cloud)
+    o3d.io.write_point_cloud(f"data/pointclouds/filtered_reconstruction_{exp_number}.ply", cloud)
 
     if visualization:
-        o3d.visualization.draw_geometries([cloud], width=3000, height=1800)
+        o3d.visualization.draw_geometries([cloud, origin_frame], width=3000, height=1800, window_name="Filtered")
 else:
     # load
-    cloud = o3d.io.read_point_cloud("data/pointclouds/filtered_reconstruction_2.ply")
-    # cloud = o3d.io.read_point_cloud("data/pointclouds/reconstruction_2.ply")
+    cloud = o3d.io.read_point_cloud(f"data/pointclouds/filtered_reconstruction_{exp_number}.ply")
 
 # CLUSTER
 if generate_new_cluster:
@@ -102,20 +111,20 @@ if generate_new_cluster:
     cloud.points = normal_moved_back
 
     # save
-    o3d.io.write_point_cloud(f"data/pointclouds/{cluster_method}_clustered_reconstruction_2.ply", cloud)
-    np.save(f"data/pointclouds/{cluster_method}_labels.npy", labels)
+    o3d.io.write_point_cloud(f"data/pointclouds/{cluster_method}_clustered_reconstruction_{exp_number}.ply", cloud)
+    np.save(f"data/pointclouds/{cluster_method}_labels_{exp_number}.npy", labels)
+
+    if visualization:
+        o3d.visualization.draw_geometries([cloud, origin_frame], width=3000, height=1800, window_name="Clustered")
 else:
     # load
-    # TODO Some loading or saving functionality is faulty
-    # cloud = o3d.io.read_point_cloud("data/pointclouds/clustered_{cluster_method}_reconstruction_2.ply")
-    # labels = np.load(f"data/pointclouds/{cluster_method}_labels.npy")
-    pass
+    cloud = o3d.io.read_point_cloud(f"data/pointclouds/{cluster_method}_clustered_reconstruction_{exp_number}.ply")
+    # cloud = o3d.io.read_point_cloud(f"data/pointclouds/filtered_reconstruction_{exp_number}.ply")
+    labels = np.load(f"data/pointclouds/{cluster_method}_labels_{exp_number}.npy")
 
 # PROJECTION
 trans_mat = np.eye(4)
 for image, position, depth_map, name in load_images():
-    # TODO remove me
-    # position = np.array([1, 0, 0, 0, 0, 0, 0])
     # generate distance map
     target_point = o3d.geometry.PointCloud()
     target_point.points = o3d.utility.Vector3dVector(position[np.newaxis, -3:])
@@ -125,6 +134,7 @@ for image, position, depth_map, name in load_images():
     # build transformation matrix
     # R = target_point.get_rotation_matrix_from_quaternion([1, 0, 0, 0])
     R = target_point.get_rotation_matrix_from_quaternion([position[0], position[1], position[2], position[3]])
+    # R = np.linalg.inv(R)
     trans_mat[:3, :3] = R
     trans_mat[:3, 3] = position[-3:]
     print(name)
@@ -132,22 +142,21 @@ for image, position, depth_map, name in load_images():
     print(trans_mat)
 
     if visualization:
-        origin_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
-            size=2, origin=position[:3])
-        origin_frame.rotate(R, np.array([0, 0, 0]))
-        o3d.visualization.draw_geometries([cloud, origin_frame], width=3000, height=1800)
+        name_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
+            size=2, origin=position[-3:])
+        name_frame.rotate(R, position[-3:])
+        o3d.visualization.draw_geometries([cloud, name_frame, origin_frame], width=3000, height=1800,
+                                          window_name=f"Frame {name}")
         # quit()
 
     # project, generate a label and save it as a set of masks
     projection = reproject(points=cloud.points, color=cloud.colors, label=labels,
                            transformation_mat=trans_mat, depth_map=depth_map, depth_range=depth_range,
-                           distance_map=distance_map, save_img=True)
+                           distance_map=distance_map, save_img=True, name=name)
     generate_label(projection=projection, original=image, growth_rate=growth_rate,
                    min_number=min_number, name=name)
     # save_label(label_name=name, label=label)
 
-# VISUALIZATION
+# # VISUALIZATION
 if visualization:
-    origin_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
-        size=2, origin=[0, 0, 0])
-    o3d.visualization.draw_geometries([cloud, origin_frame], width=3000, height=1800)
+    o3d.visualization.draw_geometries([cloud, origin_frame], width=3000, height=1800, window_name="Origin Frame")
