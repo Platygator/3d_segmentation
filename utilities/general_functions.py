@@ -105,9 +105,7 @@ def load_images(data_path: str = DATA_PATH, positions: {str : np.array} = POSE_D
     instance_names = [basename(k)[:-4] for k in glob(f'{data_path + IMAGES}*.png')]
     for name in instance_names:
         image = cv2.imread(data_path + IMAGES + name + '.png', 1)
-        # depth_map = cv2.imread(data_path + DEPTH + name + '.png', 0)
-        # TODO import real one
-        depth_map = np.zeros_like(image)
+        depth_map = cv2.imread(data_path + DEPTH + name + '.png', 0)
         position = positions[name]
         yield image, position, depth_map, name
 
