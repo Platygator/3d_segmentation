@@ -137,26 +137,29 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
     cv_projection = cv2.projectPoints(objectPoints=points, rvec=rvec[0], tvec=transformation_mat[:3, 3],
                                       cameraMatrix=cam_mat, distCoeffs=dist_mat)
 
-    pixels_cv = np.rint(cv_projection[0]).astype('uint8')
+    pixels_cv = np.rint(cv_projection[0]).astype('int')
 
-    save_index = np.zeros([height, width], dtype='uint8')
+    save_index = np.zeros([height, width], dtype='uint')
+
     for i, pixel in enumerate(pixels_cv):
         x, y = pixel[0]
         if 0 < x < height and 0 < y < width:
-            # TODO check if distance check for occlusion is working
-            dist = distance_map[x, y]
+            dist = distance_map[i]
             depth = depth_map[x, y]
-            if abs(dist - depth) <= depth_range:
-                save_index[x, y] = i+1
+            # TODO check if distance check for occlusion is working
+            # if abs(dist - depth) <= depth_range:
+            save_index[x, y] = i+1
 
-    # based on the closest index, select the respective color
+    # based on the index select the respective color
     color = np.concatenate([np.zeros([1, 3]), color], axis=0)
     label = np.concatenate([np.zeros([1]), label+1], axis=0)
     reprojection = label[save_index]
+
     if save_img:
         reprojection_visual = color[save_index]
         cv2.imwrite("label_projection.png", reprojection)
         cv2.imwrite("visual_projection.png", np.floor(reprojection_visual*255).astype('uint8'))
+
     return reprojection
 
 
@@ -178,7 +181,8 @@ def generate_label(projection: np.ndarray, original: np.ndarray, growth_rate: in
     labels_present = np.delete(labels_present, 0)
 
     for i in labels_present:
-        mask_dir = data_path + f"/masks/mask{int(i)}"
+        print("[INFO] Processing label number: ", i)
+        mask_dir = data_path + f"/masks/mask{int(i)}/"
         try:
             mkdir(mask_dir)
         except FileExistsError:
@@ -186,6 +190,11 @@ def generate_label(projection: np.ndarray, original: np.ndarray, growth_rate: in
         instance = np.zeros_like(projection)
         instance[np.where(projection == i)] = 255
         instance = cv2.dilate(instance, np.ones((5, 5), 'uint8'), iterations=growth_rate)
-        label = crf_inference_label(original, instance, 10, 2)
+        # TODO think about using convex hull instead of dilation
+        # TODO check CRF output
+        # label = crf_inference_label(original, instance, 10, 2)
+        label = instance
 
+        if not label.any():
+            print("[ERROR] There are no pixels present after CRF")
         cv2.imwrite(mask_dir + name + ".png", label)
