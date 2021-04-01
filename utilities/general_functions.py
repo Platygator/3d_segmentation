@@ -18,20 +18,12 @@ import cv2
 from os.path import basename
 # from os import mkdir
 from glob import glob
-from .live_camera_parameters import DATA_PATH, EXP_N
+from .live_camera_parameters import DATA_PATH, DATA_SET
 
 IMAGES = "/images/"
 DEPTH = "/depth/"
-POSITIONS = "/positions/"
-POSE_DIC = DATA_PATH + POSITIONS + f"reconstruction_{EXP_N}.npy"
+POSE_DIC = DATA_PATH + "/" + DATA_SET + "positions.npy"
 POSE_DIC = np.load(POSE_DIC, allow_pickle=True).item()
-
-# LABELS = "/labels/"
-#
-# try:
-#     mkdir(DATA_PATH + "/labels")
-# except FileExistsError:
-#     pass
 
 
 def turn_ply_to_npy(func):
@@ -96,7 +88,8 @@ def rotation_matrix(roll: float, pitch: float, yaw: float) -> np.ndarray:
     return np.dot(R_z, np.dot(R_y, R_x)).T
 
 
-def load_images(data_path: str = DATA_PATH, positions: {str : np.array} = POSE_DIC) -> [np.ndarray, np.ndarray]:
+def load_images(data_path: str = DATA_PATH + "/" + DATA_SET,
+                positions: {str : np.array} = POSE_DIC) -> [np.ndarray, np.ndarray]:
     """
     Generator to load all images and there respective data from the data_path folder
     :param data_path: folder containing depth, images, masks, positions, pointclouds

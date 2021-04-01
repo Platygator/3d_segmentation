@@ -23,4 +23,4 @@ HEIGHT = 1080
 WIDTH = 1440
 
 DATA_PATH = "data"
-EXP_N = 2
+DATA_SET = "reconstruction_2"
