@@ -22,7 +22,7 @@ import numpy as np
 
 from utilities import *
 
-exp_number = 2
+data_set = DATA_SET
 # rouge filter
 nb_neighbors = 20
 std_ratio = 1.0
@@ -45,14 +45,19 @@ k = 55
 epsilon = 0.3
 
 # label generation param
-growth_rate = 5
 min_number = 5
+growth_rate = 10
+shrink_rate = 5
+largest_only = True
+fill = True
+refinement_method = "crf"
+# refinement_method = "graph"
 # TODO depth map not same scale thus range chosen to include all also not same size
 depth_range = 1000  # allowed deviation from a point to the depth map
 
 generate_new_filtered = False
 generate_new_cluster = False
-visualization = True
+visualization = False
 
 if visualization:
     origin_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
@@ -60,7 +65,7 @@ if visualization:
 
 # FILTER
 if generate_new_filtered:
-    cloud = o3d.io.read_point_cloud(f"data/pointclouds/reconstruction_{exp_number}.ply")
+    cloud = o3d.io.read_point_cloud(f"data/{data_set}/pointclouds/point_cloud.ply")
 
     # remove outliers
     cloud = remove_statistical_outliers(cloud=cloud,  nb_neighbors=nb_neighbors, std_ratio=std_ratio)
@@ -81,13 +86,18 @@ if generate_new_filtered:
     # cloud.rotate(np.linalg.inv(R), np.array([0, 0, 0]))
 
     # save
-    o3d.io.write_point_cloud(f"data/pointclouds/filtered_reconstruction_{exp_number}.ply", cloud)
+    o3d.io.write_point_cloud(f"data/{data_set}/pointclouds/filtered_point_cloud.ply", cloud)
 
     if visualization:
         o3d.visualization.draw_geometries([cloud, origin_frame], width=3000, height=1800, window_name="Filtered")
 else:
     # load
-    cloud = o3d.io.read_point_cloud(f"data/pointclouds/filtered_reconstruction_{exp_number}.ply")
+    try:
+        cloud = o3d.io.read_point_cloud(f"data/{data_set}/pointclouds/filtered_point_cloud.ply")
+    except FileNotFoundError:
+        print("[ERROR] No filtered files found")
+
+# o3d.visualization.draw_geometries([cloud], width=3000, height=1800, window_name="PRESENTATION")
 
 # CLUSTER
 if generate_new_cluster:
@@ -96,8 +106,12 @@ if generate_new_cluster:
     reoriented_normals = reorient_normals(normals=cloud.normals, direction=normal_direction)
     cloud.normals = reoriented_normals
 
+    # o3d.visualization.draw_geometries([cloud], width=3000, height=1800, window_name="PRESENTATION")
+
     normal_moved = move_along_normals(points=cloud.points, normals=cloud.normals, step=step)
     cloud.points = normal_moved
+
+    # o3d.visualization.draw_geometries([cloud], width=3000, height=1800, window_name="PRESENTATION")
 
     if cluster_method == 'kmeans':
         clustered, labels = km_cluster(points=cloud.points, k=k)
@@ -110,17 +124,22 @@ if generate_new_cluster:
     normal_moved_back = move_along_normals(points=cloud.points, normals=cloud.normals, step=-step)
     cloud.points = normal_moved_back
 
+    # o3d.visualization.draw_geometries([cloud], width=3000, height=1800, window_name="PRESENTATION")
+
     # save
-    o3d.io.write_point_cloud(f"data/pointclouds/{cluster_method}_clustered_reconstruction_{exp_number}.ply", cloud)
-    np.save(f"data/pointclouds/{cluster_method}_labels_{exp_number}.npy", labels)
+    o3d.io.write_point_cloud(f"data/{data_set}/pointclouds/{cluster_method}_clustered.ply", cloud)
+    np.save(f"data/{data_set}/pointclouds/{cluster_method}_labels.npy", labels)
 
     if visualization:
         o3d.visualization.draw_geometries([cloud, origin_frame], width=3000, height=1800, window_name="Clustered")
 else:
     # load
-    cloud = o3d.io.read_point_cloud(f"data/pointclouds/{cluster_method}_clustered_reconstruction_{exp_number}.ply")
-    # cloud = o3d.io.read_point_cloud(f"data/pointclouds/filtered_reconstruction_{exp_number}.ply")
-    labels = np.load(f"data/pointclouds/{cluster_method}_labels_{exp_number}.npy")
+    try:
+        cloud = o3d.io.read_point_cloud(f"data/{data_set}/pointclouds/{cluster_method}_clustered.ply")
+        # cloud = o3d.io.read_point_cloud(f"data/pointclouds/filtered_reconstruction_{exp_number}.ply")
+        labels = np.load(f"data/{data_set}/pointclouds/{cluster_method}_labels.npy")
+    except FileNotFoundError:
+        print("[ERROR] No clustered files found")
 
 # PROJECTION
 trans_mat = np.eye(4)
@@ -153,10 +172,11 @@ for image, position, depth_map, name in load_images():
     projection = reproject(points=cloud.points, color=cloud.colors, label=labels,
                            transformation_mat=trans_mat, depth_map=depth_map, depth_range=depth_range,
                            distance_map=distance_map, save_img=True, name=name)
-    generate_label(projection=projection, original=image, growth_rate=growth_rate,
-                   min_number=min_number, name=name)
+    generate_label(projection=projection, original=image, growth_rate=growth_rate, shrink_rate=shrink_rate,
+                   min_number=min_number, name=name, refinement_method=refinement_method, fill=fill,
+                   largest=largest_only)
     # save_label(label_name=name, label=label)
 
-# # VISUALIZATION
+# VISUALIZATION
 if visualization:
     o3d.visualization.draw_geometries([cloud, origin_frame], width=3000, height=1800, window_name="Origin Frame")
