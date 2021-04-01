@@ -19,52 +19,14 @@ from sklearn.mixture import GaussianMixture
 
 from .general_functions import turn_ply_to_npy
 from .live_camera_parameters import *
+from .image_utilities import crf_refinement, graph_cut_refinement, largest_region, fill_holes
 
 from os import mkdir
 
-import pydensecrf.densecrf as dcrf
-from pydensecrf.utils import unary_from_labels, unary_from_softmax
-
 try:
-    mkdir(DATA_PATH + "/masks")
+    mkdir(DATA_PATH + "/" + DATA_SET + "/masks")
 except FileExistsError:
     pass
-
-
-def crf_inference_label(img: np.ndarray, mask: np.ndarray, t: int, n_classes: int) -> np.ndarray:
-    """
-    Based on this dudes code: https://github.com/seth814/Semantic-Shapes/blob/master/CRF%20Cat%20Demo.ipynb
-    :param img: original image
-    :param mask: label mask
-    :param t: UNKNOWN! TODO find out
-    :param n_classes: number of classes (actually always 2 here)
-    :return: refined label image
-    """
-
-    not_mask = cv2.bitwise_not(mask)
-    not_mask = np.expand_dims(not_mask, axis=2)
-    mask = np.expand_dims(mask, axis=2)
-    im_softmax = np.concatenate([not_mask, mask], axis=2)
-    im_softmax = im_softmax / 255.0
-
-    feat_first = im_softmax.transpose((2, 0, 1)).reshape((n_classes, -1))
-    unary = unary_from_softmax(feat_first)
-    unary = np.ascontiguousarray(unary)
-
-    d = dcrf.DenseCRF2D(img.shape[1], img.shape[0], n_classes)
-
-    d.setUnaryEnergy(unary)
-    d.addPairwiseGaussian(sxy=(5, 5), compat=10, kernel=dcrf.DIAG_KERNEL,
-                          normalization=dcrf.NORMALIZE_SYMMETRIC)
-
-    d.addPairwiseBilateral(sxy=(10, 10), srgb=(13, 13, 13), rgbim=img,
-                           compat=10,
-                           kernel=dcrf.DIAG_KERNEL,
-                           normalization=dcrf.NORMALIZE_SYMMETRIC)
-    Q = d.inference(t)
-    res = np.argmax(Q, axis=0).reshape((img.shape[0], img.shape[1]))
-    res *= 255
-    return res.astype('uint8')
 
 
 @turn_ply_to_npy
@@ -166,22 +128,41 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
     return reprojection
 
 
-def generate_label(projection: np.ndarray, original: np.ndarray, growth_rate: int, name: str,
-                   min_number: int, data_path: str = DATA_PATH):
+def generate_label(projection: np.ndarray, original: np.ndarray, growth_rate: int, shrink_rate: int,
+                   name: str, min_number: int, refinement_method: str,
+                   data_path: str = DATA_PATH + "/" + DATA_SET, **kwargs):
     """
     Generate masks for each label instance (similar to blender mask output)
     :param projection: image with instance label for each pixel [0 = background]
     :param original: original image
     :param growth_rate: number of dilation steps
+    :param shrink_rate: number of errosion steps after dilation
     :param name: name of the current image
     :param min_number: minimum number of instanced of one label
+    :param refinement_method: Chose "crf" or "graph"
     :param data_path: folder containing depth, images, masks, positions, pointclouds
+    :param kwargs: largest: bool -> use only the largest connected region
+                   fill: bool -> fill holes
+                   graph_thresh: int -> threshold for gaussian blur for graph cut mask
     :return: save mask images to separate folders in masks
     """
     labels_present, counts = np.unique(projection, return_counts=True)
     filter_small = counts < min_number
     labels_present = np.delete(labels_present, filter_small, 0)
     labels_present = np.delete(labels_present, 0)
+
+    largest_only = False
+    fill = False
+    graph_mask_thresh = 125
+    for argument, value in kwargs.items():
+        if argument == "largest" and value:
+            largest_only = True
+        elif argument == "fill" and value:
+            fill = True
+        elif argument == "graph_thresh":
+            graph_mask_thresh = value
+        else:
+            print("[ERROR] Unkown keyword argument: ", argument)
 
     for i in labels_present:
         print("[INFO] Processing label number: ", i)
@@ -193,11 +174,24 @@ def generate_label(projection: np.ndarray, original: np.ndarray, growth_rate: in
         instance = np.zeros_like(projection)
         instance[np.where(projection == i)] = 255
         instance = cv2.dilate(instance, np.ones((5, 5), 'uint8'), iterations=growth_rate)
-        # TODO think about using convex hull instead of dilation
+        instance = cv2.erode(instance, np.ones((5, 5), 'uint8'), iterations=shrink_rate)
+        # TODO think about using concave hull with dilation
         # TODO check CRF output
-        # label = crf_inference_label(original, instance, 10, 2)
-        label = instance
+
+        instance = largest_region(instance) if largest_only else instance
+        instance = fill_holes(instance) if fill else instance
+
+        instance = cv2.GaussianBlur(instance, (101, 101), 0)
+
+        if refinement_method == "crf":
+            label = crf_refinement(img=original, mask=instance, t=10, n_classes=2)
+        elif refinement_method == "graph":
+            instance = cv2.threshold(instance, graph_mask_thresh, 255, cv2.THRESH_BINARY)[1]
+            label = graph_cut_refinement(img=original, mask=instance)
+        else:
+            print("[ERROR] No correct refinement method chosen!")
+            label = instance
 
         if not label.any():
-            print("[ERROR] There are no pixels present after CRF")
+            print("[ERROR] There are no pixels present after refinement")
         cv2.imwrite(mask_dir + name + ".png", label)
