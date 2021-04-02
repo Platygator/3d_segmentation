@@ -22,7 +22,7 @@ from .live_camera_parameters import DATA_PATH, DATA_SET
 
 IMAGES = "/images/"
 DEPTH = "/depth/"
-POSE_DIC = DATA_PATH + "/" + DATA_SET + "positions.npy"
+POSE_DIC = DATA_PATH + "/" + DATA_SET + "/positions.npy"
 POSE_DIC = np.load(POSE_DIC, allow_pickle=True).item()
 
 

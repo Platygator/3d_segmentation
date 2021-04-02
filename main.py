@@ -12,9 +12,7 @@ Library version:
     TODO Checklist wrong projection:
          - FACT: Frames are located wrongly
          - Checked: Quaternion rotation inline with other tools
-         - Images and Camera positions are not aligned (colmap problem)
-         - Projection wrong (check alignment with frames, dense reconstruction might help debugging)
-
+    TODO Use DATA_PATH
 """
 
 import open3d as o3d
@@ -160,13 +158,12 @@ for image, position, depth_map, name in load_images():
     print(position)
     print(trans_mat)
 
-    if visualization:
-        name_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
-            size=2, origin=position[-3:])
-        name_frame.rotate(R, position[-3:])
-        o3d.visualization.draw_geometries([cloud, name_frame, origin_frame], width=3000, height=1800,
-                                          window_name=f"Frame {name}")
-        # quit()
+    # if visualization:
+    #     name_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
+    #         size=2, origin=position[-3:])
+    #     name_frame.rotate(R, position[-3:])
+    #     o3d.visualization.draw_geometries([cloud, name_frame, origin_frame], width=3000, height=1800,
+    #                                       window_name=f"Frame {name}")
 
     # project, generate a label and save it as a set of masks
     projection = reproject(points=cloud.points, color=cloud.colors, label=labels,

@@ -23,4 +23,6 @@ HEIGHT = 1080
 WIDTH = 1440
 
 DATA_PATH = "data"
+# DATA_SET = "reconstruction_1"
 DATA_SET = "reconstruction_2"
+# DATA_SET = "simulation_1"
