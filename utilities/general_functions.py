@@ -19,6 +19,7 @@ from os.path import basename
 # from os import mkdir
 from glob import glob
 from .live_camera_parameters import DATA_PATH, DATA_SET
+from .image_utilities import read_depth_map
 
 IMAGES = "/images/"
 DEPTH = "/depth/"
@@ -96,12 +97,18 @@ def load_images(data_path: str = DATA_PATH + "/" + DATA_SET,
     :return: yield, image, position, depth_map and name
     """
     instance_names = [basename(k)[:-4] for k in glob(f'{data_path + IMAGES}*.png')]
-    for name in instance_names:
+    n_img = len(instance_names)
+    for i, name in enumerate(instance_names):
+        print(f"[INFO] Processing image {i+1} / {n_img}")
         image = cv2.imread(data_path + IMAGES + name + '.png', 1)
-        depth_map = cv2.imread(data_path + DEPTH + name + '.png', 0)
+        depth_map = read_depth_map(data_path + DEPTH + name + '.png.geometric.bin')
         position = positions[name]
         yield image, position, depth_map, name
 
 
 # def save_label(label_name: str, label: np.ndarray, data_path: str = DATA_PATH):
 #     cv2.imwrite(data_path + label_name + '.png', label)
+
+
+def mIoU():
+    pass
