@@ -123,7 +123,7 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
     return reprojection
 
 
-def generate_label(projection: np.ndarray, original: np.ndarray, growth_rate: int, shrink_rate: int,
+def generate_masks(projection: np.ndarray, original: np.ndarray, growth_rate: int, shrink_rate: int,
                    name: str, min_number: int, refinement_method: str,
                    data_path: str = DATA_PATH + "/" + DATA_SET, **kwargs):
     """
@@ -157,7 +157,7 @@ def generate_label(projection: np.ndarray, original: np.ndarray, growth_rate: in
         elif argument == "graph_thresh":
             graph_mask_thresh = value
         else:
-            print("[ERROR] Unkown keyword argument: ", argument)
+            print("[ERROR] Unknown keyword argument: ", argument)
 
     print("[INFO] Processing label number: ", end='')
     for i in np.rint(labels_present):
@@ -191,4 +191,4 @@ def generate_label(projection: np.ndarray, original: np.ndarray, growth_rate: in
         if not label.any():
             print("[ERROR] There are no pixels present after refinement")
         cv2.imwrite(mask_dir + name + ".png", label)
-        print()
+    print()
