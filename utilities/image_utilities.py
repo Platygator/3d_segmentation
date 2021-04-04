@@ -101,3 +101,27 @@ def fill_holes(mask: np.ndarray) -> np.ndarray:
     closed_holes = closed_holes[1:-1, 1:-1]
 
     return closed_holes
+
+
+def read_depth_map(path: str) -> np.ndarray:
+    """
+    Copied from colmap scripts
+    For copyright see: https://github.com/colmap/colmap/blob/dev/scripts/python/read_write_dense.py
+    :param path:
+    :return:
+    """
+    with open(path, "rb") as fid:
+        width, height, channels = np.genfromtxt(fid, delimiter="&", max_rows=1,
+                                                usecols=(0, 1, 2), dtype=int)
+        fid.seek(0)
+        num_delimiter = 0
+        byte = fid.read(1)
+        while True:
+            if byte == b"&":
+                num_delimiter += 1
+                if num_delimiter >= 3:
+                    break
+            byte = fid.read(1)
+        array = np.fromfile(fid, np.float32)
+    array = array.reshape((width, height, channels), order="F")
+    return np.transpose(array, (1, 0, 2)).squeeze()
