@@ -106,9 +106,22 @@ def load_images(data_path: str = DATA_PATH + "/" + DATA_SET,
         yield image, position, depth_map, name
 
 
-# def save_label(label_name: str, label: np.ndarray, data_path: str = DATA_PATH):
-#     cv2.imwrite(data_path + label_name + '.png', label)
+def IoU(label: np.ndarray, ground_truth: np.ndarray) -> (np.ndarray, float):
+    """
+    Calculate Intersection of Union
+    :param label: generated label
+    :param ground_truth: ground truth to compare to
+    :return: IoU per instance and mean IoU
+    """
+    iou_per_instance = np.zeros(3)
+    for i, instance in enumerate([0, 128, 255]):
+        org_instance = np.zeros_like(ground_truth)
+        org_instance[np.where(ground_truth == instance)] = 1
+        rec_instance = np.zeros_like(label)
+        rec_instance[np.where(label == instance)] = 1
 
+        intersection = np.logical_and(org_instance, rec_instance).astype('uint8')
+        union = np.logical_or(org_instance, rec_instance).astype('uint8')
+        iou_per_instance[i] = np.sum(intersection) / np.sum(union)
 
-def mIoU():
-    pass
+    return iou_per_instance, np.mean(iou_per_instance)
