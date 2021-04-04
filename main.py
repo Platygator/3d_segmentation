@@ -38,7 +38,7 @@ cluster_method = "kmeans"
 # cluster_method = "dbscan"
 
 # kmeans param
-k = 55
+k = 23 # 55
 # dbscan param
 epsilon = 0.3
 
@@ -50,12 +50,12 @@ largest_only = True
 fill = True
 refinement_method = "crf"
 # refinement_method = "graph"
-# TODO depth map not same scale thus range chosen to include all also not same size
+# TODO depth map not same scale thus range chosen to include all
 depth_range = 1000  # allowed deviation from a point to the depth map
 
 generate_new_filtered = False
 generate_new_cluster = False
-visualization = False
+visualization = True
 
 if visualization:
     origin_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
@@ -73,12 +73,22 @@ if generate_new_filtered:
     # cloud.rotate(R, np.array([0, 0, 0]))
     # cloud.translate(translation_initial)
     #
-    # # remove floor
-    # cloud.points = delete_below(points=cloud.points, threshold=0.5)
-    #
-    # # remove outliers
-    # cloud = remove_statistical_outliers(cloud=cloud,  nb_neighbors=nb_neighbors, std_ratio=std_ratio)
-    #
+
+    t = 9.5
+    # remove floor
+    cloud.points = delete_above(points=cloud.points, threshold=t)
+
+    w = 25
+    h = 30
+    mesh_plane = o3d.geometry.TriangleMesh.create_box(width=w, height=h, depth=0.1)
+    mesh_plane.compute_vertex_normals()
+    mesh_plane.paint_uniform_color([0.9, 0.1, 0.1])
+    mesh_plane.translate([-w + 3.0, -h/2, t])
+
+
+    # remove outliers
+    cloud = remove_statistical_outliers(cloud=cloud,  nb_neighbors=nb_neighbors, std_ratio=std_ratio)
+
     # # rotate back
     # cloud.translate([-k for k in translation_initial])
     # cloud.rotate(np.linalg.inv(R), np.array([0, 0, 0]))
@@ -87,7 +97,7 @@ if generate_new_filtered:
     o3d.io.write_point_cloud(f"data/{data_set}/pointclouds/filtered_point_cloud.ply", cloud)
 
     if visualization:
-        o3d.visualization.draw_geometries([cloud, origin_frame], width=3000, height=1800, window_name="Filtered")
+        o3d.visualization.draw_geometries([cloud, origin_frame, mesh_plane], width=3000, height=1800, window_name="Filtered")
 else:
     # load
     try:
@@ -154,6 +164,7 @@ for image, position, depth_map, name in load_images():
     # R = np.linalg.inv(R)
     trans_mat[:3, :3] = R
     trans_mat[:3, 3] = position[-3:]
+    print("[INFO] Positional information: ")
     print(name)
     print(position)
     print(trans_mat)
@@ -168,7 +179,7 @@ for image, position, depth_map, name in load_images():
     # project, generate a label and save it as a set of masks
     projection = reproject(points=cloud.points, color=cloud.colors, label=labels,
                            transformation_mat=trans_mat, depth_map=depth_map, depth_range=depth_range,
-                           distance_map=distance_map, save_img=True, name=name)
+                           distance_map=distance_map, save_img=False, name=name)
     generate_label(projection=projection, original=image, growth_rate=growth_rate, shrink_rate=shrink_rate,
                    min_number=min_number, name=name, refinement_method=refinement_method, fill=fill,
                    largest=largest_only)
