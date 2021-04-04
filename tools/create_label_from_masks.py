@@ -18,7 +18,7 @@ import glob
 import os
 from utilities import DATA_SET, DATA_PATH
 
-thickness = 5
+thickness = 3
 
 IMAGES = "/images/"
 MASKS = "/masks/"
