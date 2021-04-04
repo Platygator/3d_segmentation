@@ -23,11 +23,6 @@ from .image_utilities import crf_refinement, graph_cut_refinement, largest_regio
 
 from os import mkdir
 
-try:
-    mkdir(DATA_PATH + "/" + DATA_SET + "/masks")
-except FileExistsError:
-    pass
-
 
 @turn_ply_to_npy
 def km_cluster(points: np.ndarray, k: int) -> [o3d.utility.Vector3dVector, np.ndarray]:
@@ -111,8 +106,8 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
             dist = distance_map[i]
             depth = depth_map[x, y]
             # TODO check if distance check for occlusion is working
-            # if abs(dist - depth) <= depth_range:
-            save_index[x, y] = i+1
+            if abs(dist - depth) <= depth_range:
+                save_index[x, y] = i+1
 
     # based on the index select the respective color
     color = np.concatenate([np.zeros([1, 3]), color], axis=0)
@@ -164,8 +159,9 @@ def generate_label(projection: np.ndarray, original: np.ndarray, growth_rate: in
         else:
             print("[ERROR] Unkown keyword argument: ", argument)
 
-    for i in labels_present:
-        print("[INFO] Processing label number: ", i)
+    print("[INFO] Processing label number: ", end='')
+    for i in np.rint(labels_present):
+        print(i, ", ", end='')
         mask_dir = data_path + f"/masks/mask{int(i)}/"
         try:
             mkdir(mask_dir)
@@ -176,7 +172,7 @@ def generate_label(projection: np.ndarray, original: np.ndarray, growth_rate: in
         instance = cv2.dilate(instance, np.ones((5, 5), 'uint8'), iterations=growth_rate)
         instance = cv2.erode(instance, np.ones((5, 5), 'uint8'), iterations=shrink_rate)
         # TODO think about using concave hull with dilation
-        # TODO check CRF output
+        # TODO tune CRF values
 
         instance = largest_region(instance) if largest_only else instance
         instance = fill_holes(instance) if fill else instance
@@ -195,3 +191,4 @@ def generate_label(projection: np.ndarray, original: np.ndarray, growth_rate: in
         if not label.any():
             print("[ERROR] There are no pixels present after refinement")
         cv2.imwrite(mask_dir + name + ".png", label)
+        print()
