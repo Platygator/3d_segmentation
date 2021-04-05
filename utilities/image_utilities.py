@@ -57,13 +57,13 @@ def crf_refinement(img: np.ndarray, mask: np.ndarray, t: int, n_classes: int) ->
     return res
 
 
-def graph_cut_refinement(img: np.ndarray, mask: np.ndarray, iter_clount: int) -> np.ndarray:
+def graph_cut_refinement(img: np.ndarray, mask: np.ndarray, iter_count: int) -> np.ndarray:
     mask[mask > 0] = cv2.GC_PR_FGD
     mask[mask == 0] = cv2.GC_BGD
     fg_model = np.zeros((1, 65), dtype="float")
     bg_model = np.zeros((1, 65), dtype="float")
     label, bg_model, fg_model = cv2.grabCut(img, mask, None, bg_model,
-                                            fg_model, iterCount=iter_clount, mode=cv2.GC_INIT_WITH_MASK)
+                                            fg_model, iterCount=iter_count, mode=cv2.GC_INIT_WITH_MASK)
 
     label[label == 2] = 0
     label[label == 3] = 255
