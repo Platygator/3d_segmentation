@@ -14,9 +14,13 @@ Library version:
 
 from settings import DATA_SET, DATA_PATH
 from utilities import IoU
+
 import glob
 import os
 import cv2
+import shutil
+from datetime import datetime
+
 import numpy as np
 
 label_names = [os.path.basename(k) for k in glob.glob(f'{DATA_PATH + "/" + DATA_SET + "/labels/"}*.png')]
@@ -25,8 +29,8 @@ global_per_instance = np.zeros(3)
 global_mean = 0
 count = 0
 for label_name in label_names:
-    label = cv2.imread(f'{DATA_PATH + "/" + DATA_SET + "/labels/" + label_name}', 0)
-    ground_truth = cv2.imread(f'{DATA_PATH + "/" + DATA_SET + "/ground_truth/" + label_name}', 0)
+    label = cv2.imread(f'{DATA_PATH}/{DATA_SET}/labels/{label_name}', 0)
+    ground_truth = cv2.imread(f'{DATA_PATH}/{DATA_SET}/ground_truth/{label_name}', 0)
 
     if label.any():
         count += 1
@@ -37,5 +41,19 @@ for label_name in label_names:
 global_per_instance /= count
 global_mean /= count
 
-print("IoU per instance: ", global_per_instance)
-print("mIoU: ", global_mean)
+IoU_string = f"""
+                IoU Background: {global_per_instance[0]}
+                IoU Stone:      {global_per_instance[1]}
+                IoU Border:     {global_per_instance[2]}
+                mIoU:           {global_mean}
+             """
+print(IoU_string)
+
+now = datetime.now().strftime("%d_%m_%H_%M")
+shutil.copy(f'{os.getcwd()}/settings/settings.py',
+            f'{DATA_PATH}/{DATA_SET}/results/{now}.txt')
+
+with open(f'{DATA_PATH}/{DATA_SET}/results/{now}.txt', 'a') as file:
+    file.write("\a")
+    file.write(IoU_string)
+
