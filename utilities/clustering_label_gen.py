@@ -186,13 +186,13 @@ def generate_masks(projection: np.ndarray, original: np.ndarray, growth_rate: in
         elif refinement_method == "graph":
             instance = cv2.threshold(instance, graph_mask_thresh, 255, cv2.THRESH_BINARY)[1]
             label = graph_cut_refinement(img=original, mask=instance.copy(), iter_count=iter_count)
-            print("Is label equal to mask?: ", not (label - instance).any())
+            # print("Is label equal to mask?: ", not (label - instance).any())
         else:
             print("[ERROR] No correct refinement method chosen!")
             instance = cv2.threshold(instance, graph_mask_thresh, 255, cv2.THRESH_BINARY)[1]
             label = instance
 
         if not label.any():
-            print("[ERROR] There are no pixels present after refinement")
+            print("\n[ERROR] There are no pixels present after refinement")
         cv2.imwrite(mask_dir + name + ".png", label)
     print()
