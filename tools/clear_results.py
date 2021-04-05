@@ -14,7 +14,7 @@ Library version:
 
 import os
 import shutil
-from utilities import DATA_PATH, DATA_SET
+from settings import DATA_PATH, DATA_SET
 
 directory = DATA_PATH + "/" + DATA_SET + "/"
 
