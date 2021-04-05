@@ -16,9 +16,8 @@ import open3d as o3d
 
 import cv2
 from os.path import basename
-# from os import mkdir
 from glob import glob
-from .live_camera_parameters import DATA_PATH, DATA_SET
+from settings import DATA_PATH, DATA_SET
 from .image_utilities import read_depth_map
 
 IMAGES = "/images/"

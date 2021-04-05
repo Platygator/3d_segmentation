@@ -12,7 +12,8 @@ Library version:
 
 """
 
-from utilities import IoU, DATA_SET, DATA_PATH
+from settings import DATA_SET, DATA_PATH
+from utilities import IoU
 import glob
 import os
 import cv2

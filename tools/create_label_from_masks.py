@@ -16,7 +16,7 @@ import cv2
 import numpy as np
 import glob
 import os
-from utilities import DATA_SET, DATA_PATH
+from settings import DATA_SET, DATA_PATH
 
 thickness = 3
 

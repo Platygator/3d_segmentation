@@ -65,6 +65,8 @@ def graph_cut_refinement(img: np.ndarray, mask: np.ndarray, iter_clount: int) ->
     label, bg_model, fg_model = cv2.grabCut(img, mask, None, bg_model,
                                             fg_model, iterCount=iter_clount, mode=cv2.GC_INIT_WITH_MASK)
 
+    label[label == 2] = 0
+    label[label == 3] = 255
     return label
 
 

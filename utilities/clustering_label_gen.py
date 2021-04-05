@@ -11,6 +11,7 @@ Library version:
 
 
 """
+
 import open3d as o3d
 import cv2
 from sklearn.cluster import KMeans
@@ -18,7 +19,8 @@ from sklearn.cluster import DBSCAN
 from sklearn.mixture import GaussianMixture
 
 from .general_functions import turn_ply_to_npy
-from .live_camera_parameters import *
+from settings import DATA_PATH, DATA_SET, CAM_MAT, DIST_MAT, WIDTH, HEIGHT
+from camera_parameters import *
 from .image_utilities import crf_refinement, graph_cut_refinement, largest_region, fill_holes
 
 from os import mkdir
@@ -124,7 +126,7 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
 
 
 def generate_masks(projection: np.ndarray, original: np.ndarray, growth_rate: int, shrink_rate: int,
-                   name: str, min_number: int, refinement_method: str,
+                   name: str, min_number: int, refinement_method: str, t: int, iter_count: int,
                    data_path: str = DATA_PATH + "/" + DATA_SET, **kwargs):
     """
     Generate masks for each label instance (similar to blender mask output)
@@ -180,12 +182,14 @@ def generate_masks(projection: np.ndarray, original: np.ndarray, growth_rate: in
         instance = cv2.GaussianBlur(instance, (101, 101), 0)
 
         if refinement_method == "crf":
-            label = crf_refinement(img=original, mask=instance, t=10, n_classes=2)
+            label = crf_refinement(img=original, mask=instance, t=t, n_classes=2)
         elif refinement_method == "graph":
             instance = cv2.threshold(instance, graph_mask_thresh, 255, cv2.THRESH_BINARY)[1]
-            label = graph_cut_refinement(img=original, mask=instance)
+            label = graph_cut_refinement(img=original, mask=instance.copy(), iter_count=iter_count)
+            print("Is label equal to mask?: ", not (label - instance).any())
         else:
             print("[ERROR] No correct refinement method chosen!")
+            instance = cv2.threshold(instance, graph_mask_thresh, 255, cv2.THRESH_BINARY)[1]
             label = instance
 
         if not label.any():
