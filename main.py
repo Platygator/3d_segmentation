@@ -85,7 +85,7 @@ if generate_new_cluster:
     normal_moved = move_along_normals(points=cloud.points, normals=cloud.normals, step=step)
     cloud.points = normal_moved
 
-    # o3d.visualization.draw_geometries([cloud], width=3000, height=1800, window_name="PRESENTATION")
+    o3d.visualization.draw_geometries([cloud], width=3000, height=1800, window_name="PRESENTATION")
 
     if cluster_method == 'kmeans':
         clustered, labels = km_cluster(points=cloud.points, k=k)
@@ -130,10 +130,10 @@ for image, position, depth_map, name in load_images():
     # R = np.linalg.inv(R)
     trans_mat[:3, :3] = R
     trans_mat[:3, 3] = position[-3:]
-    print("[INFO] Positional information: ")
-    print(name)
-    print(position)
-    print(trans_mat)
+    # print("[INFO] Positional information: ")
+    # print(name)
+    # print(position)
+    # print(trans_mat)
 
     # if visualization:
     #     name_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
@@ -145,10 +145,10 @@ for image, position, depth_map, name in load_images():
     # project, generate a label and save it as a set of masks
     projection = reproject(points=cloud.points, color=cloud.colors, label=labels,
                            transformation_mat=trans_mat, depth_map=depth_map, depth_range=depth_range,
-                           distance_map=distance_map, save_img=True, name=name)
+                           distance_map=distance_map, save_img=False, name=name)
     generate_masks(projection=projection, original=image, growth_rate=growth_rate, shrink_rate=shrink_rate,
                    min_number=min_number, name=name, refinement_method=refinement_method, fill=fill,
-                   largest=largest_only, graph_mask_thresh=graph_mask_thresh, t=t, iter_count=iter_count)
+                   largest=largest_only, graph_thresh=graph_mask_thresh, t=t, iter_count=iter_count)
     # save_label(label_name=name, label=label)
 
 # VISUALIZATION
