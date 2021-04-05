@@ -22,7 +22,7 @@ CAM_MAT, DIST_MAT, HEIGHT, WIDTH = load_camera_param(camera=camera)
 
 
 # Define path to data and to specific data set
-DATA_PATH = "data"
+DATA_PATH = "/Users/jan/Programming/PycharmProjects/3d_segmentation/data"
 # DATA_SET = "reconstruction_1"
 # DATA_SET = "reconstruction_2"
 DATA_SET = "simulation_1"
@@ -38,7 +38,7 @@ translation_initial = [0.0, 0.0, 4.5]
 
 # cluster pre processing param
 normal_direction = np.array([-1, 0, 2])
-step = 0.5
+step = 1.0
 
 # chose cluster method
 cluster_method = "kmeans"
@@ -52,14 +52,20 @@ epsilon = 0.3
 # label generation param
 min_number = 5
 growth_rate = 10
-shrink_rate = 5
+shrink_rate = 10
 largest_only = True
 fill = True
-# refinement_method = "crf"
+
+refinement_method = "crf"
+# refinement_method = "graph"
+
+# crf param
 t = 10
-refinement_method = "graph"
-graph_mask_thresh = 200
+
+# graph cut param
+graph_mask_thresh = 125
 iter_count = 5
+
 # TODO depth map not same scale thus range chosen to include all
 depth_range = 1000  # allowed deviation from a point to the depth map
 
