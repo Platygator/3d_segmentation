@@ -46,7 +46,7 @@ if generate_new_filtered:
 
     w = 25
     h = 30
-    mesh_plane = o3d.geometry.TriangleMesh.create_box(width=w, height=h, depth=0.1)
+    mesh_plane = o3d.geometry.TriangleMesh.create_box(width=w, height=h, depth=0.001)
     mesh_plane.compute_vertex_normals()
     mesh_plane.paint_uniform_color([0.9, 0.1, 0.1])
     mesh_plane.translate([-w + 3.0, -h/2, t])
@@ -85,7 +85,7 @@ if generate_new_cluster:
     normal_moved = move_along_normals(points=cloud.points, normals=cloud.normals, step=step)
     cloud.points = normal_moved
 
-    o3d.visualization.draw_geometries([cloud], width=3000, height=1800, window_name="PRESENTATION")
+    # o3d.visualization.draw_geometries([cloud], width=3000, height=1800, window_name="PRESENTATION")
 
     if cluster_method == 'kmeans':
         clustered, labels = km_cluster(points=cloud.points, k=k)
@@ -106,6 +106,7 @@ if generate_new_cluster:
 
     if visualization:
         o3d.visualization.draw_geometries([cloud, origin_frame], width=3000, height=1800, window_name="Clustered")
+        quit()
 else:
     # load
     try:
@@ -119,15 +120,14 @@ else:
 trans_mat = np.eye(4)
 for image, position, depth_map, name in load_images():
     # generate distance map
-    target_point = o3d.geometry.PointCloud()
-    target_point.points = o3d.utility.Vector3dVector(position[np.newaxis, -3:])
-    distance_map = cloud.compute_point_cloud_distance(target=target_point)
-    distance_map = np.asarray(distance_map)
+    # target_point = o3d.geometry.PointCloud()
+    # target_point.points = o3d.utility.Vector3dVector(position[np.newaxis, -3:])
+    # distance_map = cloud.compute_point_cloud_distance(target=target_point)
+    # distance_map = np.asarray(distance_map)
+    distance_map = np.asarray(cloud.points)
 
     # build transformation matrix
-    # R = target_point.get_rotation_matrix_from_quaternion([1, 0, 0, 0])
-    R = target_point.get_rotation_matrix_from_quaternion([position[0], position[1], position[2], position[3]])
-    # R = np.linalg.inv(R)
+    R = cloud.get_rotation_matrix_from_quaternion([position[0], position[1], position[2], position[3]])
     trans_mat[:3, :3] = R
     trans_mat[:3, 3] = position[-3:]
     # print("[INFO] Positional information: ")
@@ -145,11 +145,10 @@ for image, position, depth_map, name in load_images():
     # project, generate a label and save it as a set of masks
     projection = reproject(points=cloud.points, color=cloud.colors, label=labels,
                            transformation_mat=trans_mat, depth_map=depth_map, depth_range=depth_range,
-                           distance_map=distance_map, save_img=False, name=name)
+                           distance_map=distance_map, save_img=True, name=name)
     generate_masks(projection=projection, original=image, growth_rate=growth_rate, shrink_rate=shrink_rate,
                    min_number=min_number, name=name, refinement_method=refinement_method, fill=fill,
                    largest=largest_only, graph_thresh=graph_mask_thresh, t=t, iter_count=iter_count)
-    # save_label(label_name=name, label=label)
 
 # VISUALIZATION
 if visualization:
