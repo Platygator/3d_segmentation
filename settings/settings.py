@@ -22,10 +22,10 @@ CAM_MAT, DIST_MAT, HEIGHT, WIDTH = load_camera_param(camera=camera)
 
 
 # Define path to data and to specific data set
-DATA_PATH = "/Users/jan/Programming/PycharmProjects/3d_segmentation/data"
+DATA_PATH = "/Users/jan/Programming/PycharmProjects/master/3d_segmentation/data"
 # DATA_SET = "reconstruction_1"
 # DATA_SET = "reconstruction_2"
-DATA_SET = "simulation_1"
+DATA_SET = "simulation_7"
 
 
 # rouge filter
@@ -45,7 +45,7 @@ cluster_method = "kmeans"
 # cluster_method = "dbscan"
 
 # kmeans param
-k = 23  # 55
+k = 30  # 55
 # dbscan param
 epsilon = 0.3
 
@@ -67,8 +67,8 @@ graph_mask_thresh = 125
 iter_count = 5
 
 # TODO depth map not same scale thus range chosen to include all
-depth_range = 1000  # allowed deviation from a point to the depth map
+depth_range = 1  # allowed deviation from a point to the depth map
 
 generate_new_filtered = False
-generate_new_cluster = False
-visualization = False
+generate_new_cluster = True
+visualization = True
