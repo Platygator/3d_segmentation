@@ -98,6 +98,11 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
     cv_projection = cv2.projectPoints(objectPoints=points, rvec=rvec[0], tvec=transformation_mat[:3, 3],
                                       cameraMatrix=cam_mat, distCoeffs=dist_mat)
 
+    # only use z value
+    distance_map = np.concatenate([distance_map, np.ones([distance_map.shape[0], 1])], axis=1)
+    distance_map = distance_map.dot(transformation_mat)
+    distance_map = distance_map[:, 2]
+
     pixels_cv = np.rint(cv_projection[0]).astype('int')
 
     save_index = np.zeros([height, width], dtype='uint')
