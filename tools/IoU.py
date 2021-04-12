@@ -57,3 +57,8 @@ with open(f'{DATA_PATH}/{DATA_SET}/results/{now}.txt', 'a') as file:
     file.write("\a")
     file.write(IoU_string)
 
+IoU_dirt = {"Background": global_per_instance[0],
+            "Stone": global_per_instance[1],
+            "Border": global_per_instance[2],
+            "Mean": global_mean}
+np.save(f'{DATA_PATH}/{DATA_SET}/results/{now}.npy', IoU_dirt)
