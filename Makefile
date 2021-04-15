@@ -21,9 +21,8 @@ run_test:
 	$(VENV)/bin/python3 ./tools/create_label_from_masks.py
 	$(VENV)/bin/python3 ./tools/IoU.py
 
-run_hardware:
-	./$(VENV)/bin/python3 ./main/computer_vision.py
-	./$(VENV)/bin/python3 ./main/training.py -l True
+txt_to_npy:
+	$(VENV)/bin/python3 ./tools/txt_to_npy.py -s simulation_2
 
 run_software:
 	./$(VENV)/bin/python3 ./main/training.py -l False
