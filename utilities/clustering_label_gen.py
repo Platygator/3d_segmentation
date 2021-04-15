@@ -102,6 +102,7 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
     distance_map = np.concatenate([distance_map, np.ones([distance_map.shape[0], 1])], axis=1)
     distance_map = distance_map.dot(transformation_mat)
     distance_map = distance_map[:, 2]
+    # distance_map = np.linalg.norm(distance_map, axis=0)
 
     pixels_cv = np.rint(cv_projection[0]).astype('int')
 
@@ -113,7 +114,8 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
             dist = distance_map[i]
             depth = depth_map[x, y]
             # TODO check if distance check for occlusion is working
-            if abs(dist - depth) <= depth_range:
+            dist_point = abs(dist - depth)
+            if dist_point <= depth_range:
                 save_index[x, y] = i+1
 
     # based on the index select the respective color

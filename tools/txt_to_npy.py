@@ -13,7 +13,7 @@ Library version:
 """
 
 import numpy as np
-DATA_SET = "simulation_1"
+DATA_SET = "simulation_2"
 
 colmap_images_file = f"data/{DATA_SET}/images.txt"
 
