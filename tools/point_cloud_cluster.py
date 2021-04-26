@@ -12,7 +12,7 @@ Library version:
 
 """
 import numpy as np
-import o3d
+import open3d as o3d
 from utilities import *
 from settings import DATA_SET, DATA_PATH
 
