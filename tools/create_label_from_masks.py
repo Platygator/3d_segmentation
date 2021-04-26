@@ -16,7 +16,7 @@ import cv2
 import numpy as np
 import glob
 import os
-from settings import DATA_SET, DATA_PATH
+from settings import DATA_PATH
 
 thickness = 3
 
@@ -66,15 +66,15 @@ class GroundTruthGenerator:
         return ground_truth_image
 
 
-photo_images = [os.path.basename(k) for k in glob.glob(f'{DATA_PATH + "/" + DATA_SET + IMAGES}*.png')]
+photo_images = [os.path.basename(k) for k in glob.glob(f'{DATA_PATH + IMAGES}*.png')]
 image_number = len(photo_images)
 
 # initialize generator
-height, width = cv2.imread(DATA_PATH + "/" + DATA_SET + IMAGES + photo_images[0], 0).shape
-gtg = GroundTruthGenerator(height=height, width=width, path=DATA_PATH + "/" + DATA_SET,
+height, width = cv2.imread(DATA_PATH+ IMAGES + photo_images[0], 0).shape
+gtg = GroundTruthGenerator(height=height, width=width, path=DATA_PATH,
                            border_thickness=thickness)
 
 for n, image_name in enumerate(photo_images):
     print(f"Processing image {n + 1}/{image_number}")
     ground_truth = gtg.process_image(name=image_name)
-    cv2.imwrite(DATA_PATH + "/" + DATA_SET + LABELS + image_name, np.rint(ground_truth*127.5))
+    cv2.imwrite(DATA_PATH + LABELS + image_name, np.rint(ground_truth*127.5))

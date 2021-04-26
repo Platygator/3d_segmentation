@@ -17,12 +17,12 @@ import numpy as np
 from utilities import *
 from settings import *
 
-data_set = DATA_PATH + "/" + DATA_SET
+DATA_PATH
 
 # LOADING
 try:
-    cloud = o3d.io.read_point_cloud(f"{data_set}/pointclouds/clustered.ply")
-    labels = np.load(f"{data_set}/pointclouds/labels.npy")
+    cloud = o3d.io.read_point_cloud(f"{DATA_PATH}/pointclouds/clustered.ply")
+    labels = np.load(f"{DATA_PATH}/pointclouds/labels.npy")
 except FileNotFoundError:
     print("[ERROR] No clustered files found")
     quit()

@@ -19,7 +19,7 @@ from sklearn.cluster import DBSCAN
 from sklearn.mixture import GaussianMixture
 
 from .general_functions import turn_ply_to_npy
-from settings import DATA_PATH, DATA_SET, CAM_MAT, DIST_MAT, WIDTH, HEIGHT
+from settings import DATA_PATH, CAM_MAT, DIST_MAT, WIDTH, HEIGHT
 from camera_parameters import *
 from .image_utilities import crf_refinement, graph_cut_refinement, largest_region, fill_holes
 
@@ -138,7 +138,7 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
 
 def generate_masks(projection: np.ndarray, original: np.ndarray, growth_rate: int, shrink_rate: int,
                    name: str, min_number: int, refinement_method: str, t: int, iter_count: int,
-                   data_path: str = DATA_PATH + "/" + DATA_SET, **kwargs):
+                   data_path: str = DATA_PATH, **kwargs):
     """
     Generate masks for each label instance (similar to blender mask output)
     :param projection: image with instance label for each pixel [0 = background]

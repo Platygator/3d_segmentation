@@ -12,6 +12,7 @@ Library version:
 
 """
 from camera_parameters import load_camera_param
+import os
 
 # Chose camera parameters
 # camera = "real"
@@ -22,10 +23,12 @@ CAM_MAT, DIST_MAT, HEIGHT, WIDTH = load_camera_param(camera=camera)
 
 # Define path to data and to specific data set
 # DATA_PATH = "/Users/jan/Programming/PycharmProjects/master/3d_segmentation/data"
-DATA_PATH = "/Volumes/Transfer/master/3d_sets/"
+DATA_PATH = "/Volumes/Transfer/master/3d_sets"
 # DATA_SET = "reconstruction_1"
 # DATA_SET = "reconstruction_2"
-DATA_SET = "simulation_7"
+DATA_SET = "simulation_3"
+
+DATA_PATH = os.path.join(DATA_PATH, DATA_SET)
 
 # label generation param
 depth_range = 0.3  # allowed deviation from a point to the depth map

@@ -15,14 +15,14 @@ import numpy as np
 import open3d as o3d
 
 import cv2
-from os.path import basename
+import os
 from glob import glob
-from settings import DATA_PATH, DATA_SET
+from settings import DATA_PATH
 from .image_utilities import read_depth_map
 
 IMAGES = "/images/"
 DEPTH = "/depth/"
-POSE_DIC = DATA_PATH + "/" + DATA_SET + "/positions.npy"
+POSE_DIC = os.path.join(DATA_PATH, "positions.npy")
 POSE_DIC = np.load(POSE_DIC, allow_pickle=True).item()
 
 
@@ -88,14 +88,14 @@ def rotation_matrix(roll: float, pitch: float, yaw: float) -> np.ndarray:
     return np.dot(R_z, np.dot(R_y, R_x)).T
 
 
-def load_images(data_path: str = DATA_PATH + "/" + DATA_SET,
-                positions: {str : np.array} = POSE_DIC) -> [np.ndarray, np.ndarray]:
+def load_images(data_path: str = DATA_PATH, positions: {str: np.array} = POSE_DIC) -> [np.ndarray, np.ndarray]:
     """
     Generator to load all images and there respective data from the data_path folder
     :param data_path: folder containing depth, images, masks, positions, pointclouds
+    :param positions: Colmap provided positions
     :return: yield, image, position, depth_map and name
     """
-    instance_names = [basename(k)[:-4] for k in glob(f'{data_path + IMAGES}*.png')]
+    instance_names = [os.path.basename(k)[:-4] for k in glob(f'{data_path + IMAGES}*.png')]
     n_img = len(instance_names)
     for i, name in enumerate(instance_names):
         print(f"[INFO] Processing image {i+1} / {n_img}")

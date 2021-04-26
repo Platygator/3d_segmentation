@@ -13,9 +13,9 @@ Library version:
 """
 
 import numpy as np
-DATA_SET = "simulation_2"
+from settings import DATA_PATH
 
-colmap_images_file = f"data/{DATA_SET}/images.txt"
+colmap_images_file = f"{DATA_PATH}/images.txt"
 
 save_dic = {}
 
@@ -27,4 +27,4 @@ with open(colmap_images_file) as file:
             name = name[:-5]
             save_dic[name] = vec
 
-np.save(f"data/{DATA_SET}/positions.npy", save_dic)
+np.save(f"{DATA_PATH}/positions.npy", save_dic)

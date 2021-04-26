@@ -18,7 +18,7 @@ import os
 path = '/Volumes/Transfer/master/3d_sets/'
 name = 'simulation_9'
 
-pathn = path + name
+pathn = os.path.join(path, name)
 
 try:
     os.mkdir(pathn)
