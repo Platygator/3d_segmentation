@@ -23,7 +23,7 @@ from pydensecrf.utils import unary_from_labels, unary_from_softmax
 def crf_refinement(img: np.ndarray, mask: np.ndarray, t: int, n_classes: int) -> np.ndarray:
     """
     Based on this dudes code: https://github.com/seth814/Semantic-Shapes/blob/master/CRF%20Cat%20Demo.ipynb
-    :param img: original image
+    :param img: reprojected_cloud image
     :param mask: label mask
     :param t: UNKNOWN! TODO find out
     :param n_classes: number of classes (actually always 2 here)
