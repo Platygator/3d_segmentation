@@ -16,8 +16,8 @@ import os
 import shutil
 from settings import DATA_PATH
 
-shutil.rmtree(DATA_PATH + 'masks')
-os.mkdir(DATA_PATH + "masks")
+shutil.rmtree(DATA_PATH + '/masks')
+os.mkdir(DATA_PATH + "/masks")
 
-shutil.rmtree(DATA_PATH + 'labels')
-os.mkdir(DATA_PATH + "labels")
+shutil.rmtree(DATA_PATH + '/labels')
+os.mkdir(DATA_PATH + "/labels")
