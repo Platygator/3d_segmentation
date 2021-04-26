@@ -14,8 +14,9 @@ Library version:
 
 import os
 
-path = '/Users/jan/Programming/PycharmProjects/3d_segmentation/data/'
-name = 'simulation_5'
+# path = '/Users/jan/Programming/PycharmProjects/3d_segmentation/data/'
+path = '/Volumes/Transfer/master/3d_sets/'
+name = 'simulation_9'
 
 pathn = path + name
 
