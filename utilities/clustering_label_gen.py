@@ -73,7 +73,7 @@ def dbscan_cluster(points: np.ndarray, epsilon: float) -> [o3d.utility.Vector3dV
 @turn_ply_to_npy
 def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
               transformation_mat: np.ndarray, depth_map: np.ndarray,
-              depth_range: float, distance_map: np.ndarray, name: str,
+              depth_range: float, name: str,
               cam_mat: np.ndarray = CAM_MAT, dist_mat: np.ndarray = DIST_MAT,
               height: int = HEIGHT, width: int = WIDTH, save_img: bool = False) -> np.ndarray:
     """
@@ -84,7 +84,6 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
     :param transformation_mat: transformation of the current camera location
     :param depth_map: depth map of image
     :param depth_range: acceptable deviation between distance and depth
-    :param distance_map: distance from all points to camera center point
     :param name: image name
     :param cam_mat: camera matrix
     :param dist_mat: distortion matrix [k1, k2, p1, p2]
@@ -94,40 +93,45 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
     :return: image where each pixel has a label [0 = background]
     """
 
-    rvec = cv2.Rodrigues(transformation_mat[:3, :3])
+    R = transformation_mat[:3, :3]
+    camera_center = transformation_mat[:3, 3]
+    real_center = -1 * R.T.dot(camera_center.T)
+
+    rvec = cv2.Rodrigues(R)
     cv_projection = cv2.projectPoints(objectPoints=points, rvec=rvec[0], tvec=transformation_mat[:3, 3],
                                       cameraMatrix=cam_mat, distCoeffs=dist_mat)
 
-    # only use z value
-    distance_map = np.concatenate([distance_map, np.ones([distance_map.shape[0], 1])], axis=1)
-    distance_map = distance_map.dot(transformation_mat)
-    distance_map = distance_map[:, 2]
-    # distance_map = np.linalg.norm(distance_map, axis=0)
+    pixels = np.rint(cv_projection[0]).astype('int')
 
-    pixels_cv = np.rint(cv_projection[0]).astype('int')
+    distance_map = points - np.repeat(real_center[np.newaxis, :], points.shape[0], axis=0)
+    distance_map = np.linalg.norm(distance_map, axis=1)
+    # distance_map = distance_map[:, 2]
 
     save_index = np.zeros([height, width], dtype='uint')
 
-    for i, pixel in enumerate(pixels_cv):
+    for i, pixel in enumerate(pixels):
         y, x = pixel[0]
-        if 0 < x < height and 0 < y < width:
+        if 0 <= x < height and 0 <= y < width:
             dist = distance_map[i]
             depth = depth_map[x, y]
             # TODO check if distance check for occlusion is working
-            dist_point = abs(dist - depth)
-            if dist_point <= depth_range:
+            abs_dist = abs(dist - depth)
+            if abs_dist <= abs(depth_range * dist):
                 save_index[x, y] = i+1
 
-    # based on the index select the respective color
-    color = np.concatenate([np.zeros([1, 3]), color], axis=0)
+    # based on the index select the respective index
     label = np.concatenate([np.zeros([1]), label+1], axis=0)
     reprojection = label[save_index]
 
     if save_img:
+        # based on the index select the respective colour
+        color = np.concatenate([np.zeros([1, 3]), color], axis=0)
         reprojection_visual = color[save_index]
         print("[INFO] Saving debug images")
+
         cv2.imwrite(f"debug_images/label_projection_{name}.png", reprojection)
-        cv2.imwrite(f"debug_images/visual_projection_{name}.png", np.floor(reprojection_visual*255).astype('uint8'))
+        visual_label_img = cv2.cvtColor(np.floor(reprojection_visual*255).astype('uint8'), cv2.COLOR_BGR2RGB)
+        cv2.imwrite(f"debug_images/visual_projection_{name}.png", visual_label_img)
 
     return reprojection
 
@@ -138,9 +142,9 @@ def generate_masks(projection: np.ndarray, original: np.ndarray, growth_rate: in
     """
     Generate masks for each label instance (similar to blender mask output)
     :param projection: image with instance label for each pixel [0 = background]
-    :param original: original image
+    :param original: reprojected_cloud image
     :param growth_rate: number of dilation steps
-    :param shrink_rate: number of errosion steps after dilation
+    :param shrink_rate: number of erosion steps after dilation
     :param name: name of the current image
     :param min_number: minimum number of instanced of one label
     :param refinement_method: Chose "crf" or "graph"
