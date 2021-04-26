@@ -14,12 +14,10 @@ Library version:
 
 import os
 import shutil
-from settings import DATA_PATH, DATA_SET
+from settings import DATA_PATH
 
-directory = DATA_PATH + "/" + DATA_SET + "/"
+shutil.rmtree(DATA_PATH + 'masks')
+os.mkdir(DATA_PATH + "masks")
 
-shutil.rmtree(directory + 'masks')
-os.mkdir(directory + "masks")
-
-shutil.rmtree(directory + 'labels')
-os.mkdir(directory + "labels")
+shutil.rmtree(DATA_PATH + 'labels')
+os.mkdir(DATA_PATH + "labels")
