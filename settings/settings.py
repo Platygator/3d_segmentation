@@ -21,12 +21,14 @@ CAM_MAT, DIST_MAT, HEIGHT, WIDTH = load_camera_param(camera=camera)
 
 
 # Define path to data and to specific data set
-DATA_PATH = "/Users/jan/Programming/PycharmProjects/master/3d_segmentation/data"
+# DATA_PATH = "/Users/jan/Programming/PycharmProjects/master/3d_segmentation/data"
+DATA_PATH = "/Volumes/Transfer/master/3d_sets/"
 # DATA_SET = "reconstruction_1"
 # DATA_SET = "reconstruction_2"
-DATA_SET = "simulation_2"
+DATA_SET = "simulation_7"
 
 # label generation param
+depth_range = 0.3  # allowed deviation from a point to the depth map
 min_number = 5
 growth_rate = 10
 shrink_rate = 10
@@ -43,8 +45,6 @@ t = 10
 graph_mask_thresh = 125
 iter_count = 5
 
-# TODO depth map not same scale thus range chosen to include all
-depth_range = 1000  # allowed deviation from a point to the depth map
 
 generate_new_cluster = False
-visualization = True
+visualization = False
