@@ -19,7 +19,7 @@ from settings import *
 
 data_set = DATA_PATH + "/" + DATA_SET
 
-# load
+# LOADING
 try:
     cloud = o3d.io.read_point_cloud(f"{data_set}/pointclouds/clustered.ply")
     labels = np.load(f"{data_set}/pointclouds/labels.npy")
@@ -30,12 +30,6 @@ except FileNotFoundError:
 # PROJECTION
 trans_mat = np.eye(4)
 for image, position, depth_map, name in load_images():
-    # generate distance map
-    # target_point = o3d.geometry.PointCloud()
-    # target_point.points = o3d.utility.Vector3dVector(position[np.newaxis, -3:])
-    # distance_map = cloud.compute_point_cloud_distance(target=target_point)
-    # distance_map = np.asarray(distance_map)
-    distance_map = np.asarray(cloud.points)
 
     # build transformation matrix
     R = cloud.get_rotation_matrix_from_quaternion([position[0], position[1], position[2], position[3]])
@@ -56,7 +50,7 @@ for image, position, depth_map, name in load_images():
     # project, generate a label and save it as a set of masks
     projection = reproject(points=cloud.points, color=cloud.colors, label=labels,
                            transformation_mat=trans_mat, depth_map=depth_map, depth_range=depth_range,
-                           distance_map=distance_map, save_img=False, name=name)
+                           save_img=visualization, name=name)
     generate_masks(projection=projection, original=image, growth_rate=growth_rate, shrink_rate=shrink_rate,
                    min_number=min_number, name=name, refinement_method=refinement_method, fill=fill,
                    largest=largest_only, graph_thresh=graph_mask_thresh, t=t, iter_count=iter_count)
