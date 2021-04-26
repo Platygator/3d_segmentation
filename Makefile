@@ -21,6 +21,9 @@ run_test:
 	$(VENV)/bin/python3 ./tools/create_label_from_masks.py
 	$(VENV)/bin/python3 ./tools/IoU.py
 
+IoU:
+	$(VENV)/bin/python3 ./tools/IoU.py
+
 txt_to_npy:
 	$(VENV)/bin/python3 ./tools/txt_to_npy.py -s simulation_2
 
