@@ -112,12 +112,16 @@ def IoU(label: np.ndarray, ground_truth: np.ndarray) -> (np.ndarray, float):
     :param ground_truth: ground truth to compare to
     :return: IoU per instance and mean IoU
     """
+    if ground_truth.max() == 2:
+        gt_vals = [0, 1, 2]
+    else:
+        gt_vals = [0, 128, 255]
     iou_per_instance = np.zeros(3)
-    for i, instance in enumerate([0, 128, 255]):
+    for i, instance_lab, instance_gt in enumerate(zip([0, 128, 255], gt_vals)):
         org_instance = np.zeros_like(ground_truth)
-        org_instance[np.where(ground_truth == instance)] = 1
+        org_instance[np.where(ground_truth == instance_gt)] = 1
         rec_instance = np.zeros_like(label)
-        rec_instance[np.where(label == instance)] = 1
+        rec_instance[np.where(label == instance_lab)] = 1
 
         intersection = np.logical_and(org_instance, rec_instance).astype('uint8')
         union = np.logical_or(org_instance, rec_instance).astype('uint8')
