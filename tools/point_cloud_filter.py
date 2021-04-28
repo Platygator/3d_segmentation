@@ -51,13 +51,13 @@ mesh_plane.translate([-w + 3.0, -h / 2, t])
 
 
 # remove floor
-cloud.points = delete_above(points=cloud.points, threshold=t)
+# cloud.points = delete_above(points=cloud.points, threshold=t)
 
 # remove radius
-cloud.points = delete_radius(points=cloud.points, radius=3)
+# cloud.points = delete_radius(points=cloud.points, radius=3)
 
 # remove outliers
-cloud = remove_statistical_outliers(cloud=cloud, nb_neighbors=nb_neighbors, std_ratio=std_ratio)
+# cloud = remove_statistical_outliers(cloud=cloud, nb_neighbors=nb_neighbors, std_ratio=std_ratio)
 
 # o3d.visualization.draw_geometries([cloud, mesh_plane, origin_frame],
 #                                   width=3000, height=1800, window_name="Filtered")
