@@ -26,9 +26,9 @@ cluster_method = "kmeans"
 # cluster_method = "dbscan"
 
 # kmeans param
-k = 13  # 55
+k = 12  # 55
 # dbscan param
-epsilon = 0.3
+epsilon = 0.25
 
 
 # FILTER
