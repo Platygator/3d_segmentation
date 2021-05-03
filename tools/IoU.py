@@ -23,6 +23,8 @@ from datetime import datetime
 
 import numpy as np
 
+
+experiment_name = "first_full_test"
 label_names = [os.path.basename(k) for k in glob.glob(f'{DATA_PATH + "/labels/"}*.png')]
 
 global_per_instance = np.zeros(3)
@@ -50,10 +52,15 @@ IoU_string = f"""
 print(IoU_string)
 
 now = datetime.now().strftime("%d_%m_%H_%M")
-shutil.copy(f'{os.getcwd()}/settings/settings.py',
-            f'{DATA_PATH}/results/{now}.txt')
 
-with open(f'{DATA_PATH}/results/{now}.txt', 'a') as file:
+if experiment_name is not None:
+    name = experiment_name
+else:
+    name = now
+shutil.copy(f'{os.getcwd()}/settings/settings.py',
+            f'{DATA_PATH}/results/{name}.txt')
+
+with open(f'{DATA_PATH}/results/{name}.txt', 'a') as file:
     file.write("\a")
     file.write(IoU_string)
 
@@ -61,4 +68,4 @@ IoU_dirt = {"Background": global_per_instance[0],
             "Stone": global_per_instance[1],
             "Border": global_per_instance[2],
             "Mean": global_mean}
-np.save(f'{DATA_PATH}/results/{now}.npy', IoU_dirt)
+np.save(f'{DATA_PATH}/results/{name}.npy', IoU_dirt)
