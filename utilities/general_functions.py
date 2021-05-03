@@ -117,7 +117,7 @@ def IoU(label: np.ndarray, ground_truth: np.ndarray) -> (np.ndarray, float):
     else:
         gt_vals = [0, 128, 255]
     iou_per_instance = np.zeros(3)
-    for i, instance_lab, instance_gt in enumerate(zip([0, 128, 255], gt_vals)):
+    for i, (instance_lab, instance_gt) in enumerate(zip([0, 128, 255], gt_vals)):
         org_instance = np.zeros_like(ground_truth)
         org_instance[np.where(ground_truth == instance_gt)] = 1
         rec_instance = np.zeros_like(label)
