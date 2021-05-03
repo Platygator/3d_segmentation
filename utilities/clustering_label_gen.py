@@ -46,7 +46,7 @@ def km_cluster(points: np.ndarray, k: int) -> [o3d.utility.Vector3dVector, np.nd
 
 @turn_ply_to_npy
 def gmm_cluster(points: np.ndarray):
-    # TODO write method
+    # PLACEHOLDER
     gausmmix = GaussianMixture(n_components=3, random_state=0)
     gausmmix.fit(points)
 
@@ -107,6 +107,8 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
     distance_map = np.linalg.norm(distance_map, axis=1)
     # distance_map = distance_map[:, 2]
 
+    save_distance = np.zeros_like(depth_map)
+
     save_index = np.zeros([height, width], dtype='uint')
 
     for i, pixel in enumerate(pixels):
@@ -114,8 +116,8 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
         if 0 <= x < height and 0 <= y < width:
             dist = distance_map[i]
             depth = depth_map[x, y]
-            # TODO check if distance check for occlusion is working
             abs_dist = abs(dist - depth)
+            save_distance[x, y] = dist
             if abs_dist <= abs(depth_range * dist):
                 save_index[x, y] = i+1
 
@@ -124,12 +126,13 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
     reprojection = label[save_index]
 
     if save_img:
+        cv2.imwrite(f"debug_images/label_projection_{name}.png", reprojection)
+
         # based on the index select the respective colour
         color = np.concatenate([np.zeros([1, 3]), color], axis=0)
         reprojection_visual = color[save_index]
         print("[INFO] Saving debug images")
 
-        cv2.imwrite(f"debug_images/label_projection_{name}.png", reprojection)
         visual_label_img = cv2.cvtColor(np.floor(reprojection_visual*255).astype('uint8'), cv2.COLOR_BGR2RGB)
         cv2.imwrite(f"debug_images/visual_projection_{name}.png", visual_label_img)
 
