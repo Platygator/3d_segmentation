@@ -26,7 +26,7 @@ cluster_method = "kmeans"
 # cluster_method = "dbscan"
 
 # kmeans param
-k = 12  # 55
+k = 13  # 55
 # dbscan param
 epsilon = 0.25
 

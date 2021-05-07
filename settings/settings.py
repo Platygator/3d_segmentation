@@ -26,7 +26,7 @@ CAM_MAT, DIST_MAT, HEIGHT, WIDTH = load_camera_param(camera=camera)
 DATA_PATH = "/Volumes/Transfer/master/3d_sets"
 # DATA_SET = "reconstruction_1"
 # DATA_SET = "reconstruction_2"
-DATA_SET = "simulation_4"
+DATA_SET = "simulation_3"
 
 DATA_PATH = os.path.join(DATA_PATH, DATA_SET)
 
@@ -50,4 +50,4 @@ iter_count = 5
 
 
 generate_new_cluster = False
-visualization = True
+visualization = False
