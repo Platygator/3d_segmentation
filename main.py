@@ -13,6 +13,7 @@ Library version:
 
 import open3d as o3d
 import numpy as np
+import cv2
 
 from utilities import *
 from settings import *
@@ -58,7 +59,7 @@ for image, position, depth_map, name in load_images():
                    min_number=min_number, name=name, refinement_method=refinement_method, fill=fill,
                    largest=largest_only, graph_thresh=graph_mask_thresh, t=t, iter_count=iter_count)
     unknown_mask = unknown_reg.retrieve_label_img()
-    continue
+    cv2.imwrite(f"{DATA_PATH}/unknown/{name}.png", unknown_mask)
 
 # VISUALIZATION
 if visualization:

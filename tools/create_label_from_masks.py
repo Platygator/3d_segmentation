@@ -23,6 +23,7 @@ thickness = 3
 IMAGES = "/images/"
 MASKS = "/masks/"
 LABELS = "/labels/"
+UNKNOWN = "/unknown/"
 
 
 class GroundTruthGenerator:
@@ -70,11 +71,14 @@ photo_images = [os.path.basename(k) for k in glob.glob(f'{DATA_PATH + IMAGES}*.p
 image_number = len(photo_images)
 
 # initialize generator
-height, width = cv2.imread(DATA_PATH+ IMAGES + photo_images[0], 0).shape
+height, width = cv2.imread(DATA_PATH + IMAGES + photo_images[0], 0).shape
 gtg = GroundTruthGenerator(height=height, width=width, path=DATA_PATH,
                            border_thickness=thickness)
 
 for n, image_name in enumerate(photo_images):
     print(f"Processing image {n + 1}/{image_number}")
     ground_truth = gtg.process_image(name=image_name)
-    cv2.imwrite(DATA_PATH + LABELS + image_name, np.rint(ground_truth*127.5))
+    unknown = cv2.imread(DATA_PATH + UNKNOWN + image_name, 0)
+    finished_label = np.rint(ground_truth*127.5).astype('uint8')
+    finished_label[unknown != 0] = 50
+    cv2.imwrite(DATA_PATH + LABELS + image_name, finished_label)
