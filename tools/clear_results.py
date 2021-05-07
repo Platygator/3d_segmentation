@@ -21,3 +21,6 @@ os.mkdir(DATA_PATH + "/masks")
 
 shutil.rmtree(DATA_PATH + '/labels')
 os.mkdir(DATA_PATH + "/labels")
+
+shutil.rmtree(DATA_PATH + '/unknown')
+os.mkdir(DATA_PATH + "/unknown")
