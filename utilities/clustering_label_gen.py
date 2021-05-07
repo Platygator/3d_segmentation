@@ -207,6 +207,12 @@ def generate_masks(projection: np.ndarray, original: np.ndarray, growth_rate: in
         else:
             empty_masks.append(i)
 
+    # for i, instance in enumerate(labels_present):
+    #     filter_img = cv2.bitwise_not((projection == instance) * cv2.bitwise_not(masks[i, :, :])) // 255
+    #     projection *= filter_img
+        # debug purposes (projection != 0).astype('uint8') * 255
+
+    # delete empty masks
     masks = np.delete(masks, empty_masks, 0)
     labels_present = np.delete(labels_present, empty_masks, 0)
 
@@ -221,7 +227,8 @@ def generate_masks(projection: np.ndarray, original: np.ndarray, growth_rate: in
         instance = largest_region(instance) if largest_only else instance
         instance = fill_holes(instance) if fill else instance
 
-        instance = cv2.GaussianBlur(instance, (101, 101), 0)
+        # instance = cv2.GaussianBlur(instance, (101, 101), 0)
+        instance = cv2.GaussianBlur(instance, (51, 51), 0)
 
         if refinement_method == "crf":
             # TODO add all other params
