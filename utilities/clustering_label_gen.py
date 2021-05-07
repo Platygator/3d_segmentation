@@ -127,14 +127,14 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
     reprojection = label[save_index]
 
     if save_img:
+        print("[INFO] Saving debug images")
         cv2.imwrite(f"debug_images/label_projection_{name}.png", reprojection)
 
         # based on the index select the respective colour
         color = np.concatenate([np.zeros([1, 3]), color], axis=0)
-        reprojection_visual = color[save_index]
-        print("[INFO] Saving debug images")
+        visual_label_img = color[save_index]
 
-        visual_label_img = cv2.cvtColor(np.floor(reprojection_visual*255).astype('uint8'), cv2.COLOR_BGR2RGB)
+        visual_label_img = cv2.cvtColor(np.floor(visual_label_img*255).astype('uint8'), cv2.COLOR_BGR2RGB)
         cv2.imwrite(f"debug_images/visual_projection_{name}.png", visual_label_img)
 
     return reprojection, save_distance
@@ -180,9 +180,9 @@ def generate_masks(projection: np.ndarray, original: np.ndarray, growth_rate: in
 
     masks = np.zeros([labels_present.shape[0], projection.shape[0], projection.shape[1]], dtype='uint8')
     distances = []
-    print("[INFO] Processing label number: ", end='')
+
+    print("[INFO] Creating occlusion image")
     for i, label in enumerate(labels_present):
-        print(label, ", ", end='')
         instance = np.zeros_like(projection)
         instance[np.where(projection == label)] = 255
         instance = cv2.dilate(instance, np.ones((5, 5), 'uint8'), iterations=growth_rate)
@@ -195,15 +195,24 @@ def generate_masks(projection: np.ndarray, original: np.ndarray, growth_rate: in
     # Check for occlusion by hierarchy
     distances = np.array(distances)
     sort_order = distances.argsort()
-    all_labels = labels_present[sort_order]
+    labels_present = labels_present[sort_order]
     masks = masks[sort_order, :, :]
 
-    for i in range(all_labels.shape[0]):
+    empty_masks = []
+    for i in range(labels_present.shape[0]):
         master = masks[i, :, :].copy()
-        for j in range(i + 1, all_labels.shape[0]):
-            masks[j, :, :] = cv2.bitwise_or(masks[j, :, :], masks[j, :, :], mask=cv2.bitwise_not(master))
+        if master.any():
+            for j in range(i + 1, labels_present.shape[0]):
+                masks[j, :, :] = cv2.bitwise_or(masks[j, :, :], masks[j, :, :], mask=cv2.bitwise_not(master))
+        else:
+            empty_masks.append(i)
 
-    for instance, label_num in zip(masks, all_labels):
+    masks = np.delete(masks, empty_masks, 0)
+    labels_present = np.delete(labels_present, empty_masks, 0)
+
+    print("[INFO] Processing label number: ", end='')
+    for instance, label_num in zip(masks, labels_present):
+        print(label_num, ", ", end='')
         mask_dir = data_path + f"/masks/mask{int(label_num)}/"
         try:
             mkdir(mask_dir)
