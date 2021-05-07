@@ -48,10 +48,11 @@ for image, position, depth_map, name in load_images():
     #                                       window_name=f"Frame {name}")
 
     # project, generate a label and save it as a set of masks
-    projection = reproject(points=cloud.points, color=cloud.colors, label=labels,
+    projection, distance_map = reproject(points=cloud.points, color=cloud.colors, label=labels,
                            transformation_mat=trans_mat, depth_map=depth_map, depth_range=depth_range,
                            save_img=visualization, name=name)
     generate_masks(projection=projection, original=image, growth_rate=growth_rate, shrink_rate=shrink_rate,
+                   distance_map=distance_map,
                    min_number=min_number, name=name, refinement_method=refinement_method, fill=fill,
                    largest=largest_only, graph_thresh=graph_mask_thresh, t=t, iter_count=iter_count)
 
