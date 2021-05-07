@@ -38,6 +38,7 @@ shrink_rate = 10
 largest_only = True
 fill = True
 
+
 refinement_method = "crf"
 # refinement_method = "graph"
 
@@ -48,6 +49,9 @@ t = 10
 graph_mask_thresh = 125
 iter_count = 5
 
+# unknown parameters
+un_max_refinement_loss = 0.5
+un_small_tresh = 100
 
 generate_new_cluster = False
 visualization = False
