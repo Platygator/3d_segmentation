@@ -19,10 +19,10 @@ from sklearn.cluster import DBSCAN
 from sklearn.mixture import GaussianMixture
 
 from .general_functions import turn_ply_to_npy
-from settings import DATA_PATH, CAM_MAT, DIST_MAT, WIDTH, HEIGHT
+from settings import DATA_PATH, CAM_MAT, DIST_MAT, WIDTH, HEIGHT, un_small_tresh, un_max_refinement_loss
 from camera_parameters import *
 from .image_utilities import crf_refinement, graph_cut_refinement, largest_region, fill_holes
-
+from .unknown_class import UnknownRegister
 from os import mkdir
 
 
@@ -141,7 +141,7 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
 
 
 def generate_masks(projection: np.ndarray, original: np.ndarray, growth_rate: int, shrink_rate: int,
-                   distance_map: np.ndarray,
+                   distance_map: np.ndarray, unknown_reg: UnknownRegister,
                    name: str, min_number: int, refinement_method: str, t: int, iter_count: int,
                    data_path: str = DATA_PATH, **kwargs):
     """
@@ -159,6 +159,9 @@ def generate_masks(projection: np.ndarray, original: np.ndarray, growth_rate: in
                    graph_thresh: int -> threshold for gaussian blur for graph cut mask
     :return: save mask images to separate folders in masks
     """
+
+    unknown_reg.new_label()
+
     labels_present, counts = np.unique(projection, return_counts=True)
     filter_small = counts < min_number
     labels_present = np.delete(labels_present, filter_small, 0)
@@ -201,6 +204,7 @@ def generate_masks(projection: np.ndarray, original: np.ndarray, growth_rate: in
     empty_masks = []
     for i in range(labels_present.shape[0]):
         master = masks[i, :, :].copy()
+        unknown_reg.small_region(region=master)
         if master.any():
             for j in range(i + 1, labels_present.shape[0]):
                 masks[j, :, :] = cv2.bitwise_or(masks[j, :, :], masks[j, :, :], mask=cv2.bitwise_not(master))
@@ -227,6 +231,7 @@ def generate_masks(projection: np.ndarray, original: np.ndarray, growth_rate: in
         instance = largest_region(instance) if largest_only else instance
         instance = fill_holes(instance) if fill else instance
 
+        instance_before = instance.copy()
         # instance = cv2.GaussianBlur(instance, (101, 101), 0)
         instance = cv2.GaussianBlur(instance, (51, 51), 0)
 
@@ -242,7 +247,11 @@ def generate_masks(projection: np.ndarray, original: np.ndarray, growth_rate: in
             instance = cv2.threshold(instance, graph_mask_thresh, 255, cv2.THRESH_BINARY)[1]
             label = instance
 
+        unknown_reg.refinement_lost(before=instance_before, after=label)
+        unknown_reg.unconnected_patches(region=label)
+
         if not label.any():
             print("\n[ERROR] There are no pixels present after refinement")
         cv2.imwrite(mask_dir + name + ".png", label)
+
     print()
