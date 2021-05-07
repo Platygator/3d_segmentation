@@ -27,9 +27,6 @@ IoU:
 txt_to_npy:
 	$(VENV)/bin/python3 ./tools/txt_to_npy.py -s simulation_2
 
-run_software:
-	./$(VENV)/bin/python3 ./main/training.py -l False
-
 clean:
 	rm -rf ./$(VENV)
 	rm -rf ./hubert.egg-info
