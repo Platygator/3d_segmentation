@@ -111,15 +111,16 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
 
     save_index = np.zeros([height, width], dtype='uint')
 
+    # TODO vectorize
     for i, pixel in enumerate(pixels):
         y, x = pixel[0]
         if 0 <= x < height and 0 <= y < width:
             dist = distance_map[i]
             depth = depth_map[x, y]
-            abs_dist = abs(dist - depth)
+            # abs_dist = abs(dist - depth)
             save_distance[x, y] = dist
-            if abs_dist <= abs(depth_range * dist):
-                save_index[x, y] = i+1
+            # if abs_dist <= abs(depth_range * dist):
+            save_index[x, y] = i+1
 
     # based on the index select the respective index
     label = np.concatenate([np.zeros([1]), label+1], axis=0)
@@ -136,10 +137,11 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
         visual_label_img = cv2.cvtColor(np.floor(reprojection_visual*255).astype('uint8'), cv2.COLOR_BGR2RGB)
         cv2.imwrite(f"debug_images/visual_projection_{name}.png", visual_label_img)
 
-    return reprojection
+    return reprojection, save_distance
 
 
 def generate_masks(projection: np.ndarray, original: np.ndarray, growth_rate: int, shrink_rate: int,
+                   distance_map: np.ndarray,
                    name: str, min_number: int, refinement_method: str, t: int, iter_count: int,
                    data_path: str = DATA_PATH, **kwargs):
     """
@@ -161,6 +163,7 @@ def generate_masks(projection: np.ndarray, original: np.ndarray, growth_rate: in
     filter_small = counts < min_number
     labels_present = np.delete(labels_present, filter_small, 0)
     labels_present = np.delete(labels_present, 0)
+    labels_present = np.rint(labels_present).astype('uint8')
 
     largest_only = False
     fill = False
@@ -175,27 +178,44 @@ def generate_masks(projection: np.ndarray, original: np.ndarray, growth_rate: in
         else:
             print("[ERROR] Unknown keyword argument: ", argument)
 
+    masks = np.zeros([labels_present.shape[0], projection.shape[0], projection.shape[1]], dtype='uint8')
+    distances = []
     print("[INFO] Processing label number: ", end='')
-    for i in np.rint(labels_present):
-        print(i, ", ", end='')
-        mask_dir = data_path + f"/masks/mask{int(i)}/"
+    for i, label in enumerate(labels_present):
+        print(label, ", ", end='')
+        instance = np.zeros_like(projection)
+        instance[np.where(projection == label)] = 255
+        instance = cv2.dilate(instance, np.ones((5, 5), 'uint8'), iterations=growth_rate)
+        instance = cv2.erode(instance, np.ones((5, 5), 'uint8'), iterations=shrink_rate)
+        # TODO think about using concave hull with dilation
+
+        masks[i, :, :] = instance.astype('uint8')
+        distances.append(sum(distance_map[projection == label]) / distance_map[projection == label].shape[0])
+
+    # Check for occlusion by hierarchy
+    distances = np.array(distances)
+    sort_order = distances.argsort()
+    all_labels = labels_present[sort_order]
+    masks = masks[sort_order, :, :]
+
+    for i in range(all_labels.shape[0]):
+        master = masks[i, :, :].copy()
+        for j in range(i + 1, all_labels.shape[0]):
+            masks[j, :, :] = cv2.bitwise_or(masks[j, :, :], masks[j, :, :], mask=cv2.bitwise_not(master))
+
+    for instance, label_num in zip(masks, all_labels):
+        mask_dir = data_path + f"/masks/mask{int(label_num)}/"
         try:
             mkdir(mask_dir)
         except FileExistsError:
             pass
-        instance = np.zeros_like(projection)
-        instance[np.where(projection == i)] = 255
-        instance = cv2.dilate(instance, np.ones((5, 5), 'uint8'), iterations=growth_rate)
-        instance = cv2.erode(instance, np.ones((5, 5), 'uint8'), iterations=shrink_rate)
-        # TODO think about using concave hull with dilation
-        # TODO tune CRF values
-
         instance = largest_region(instance) if largest_only else instance
         instance = fill_holes(instance) if fill else instance
 
         instance = cv2.GaussianBlur(instance, (101, 101), 0)
 
         if refinement_method == "crf":
+            # TODO add all other params
             label = crf_refinement(img=original, mask=instance, t=t, n_classes=2)
         elif refinement_method == "graph":
             instance = cv2.threshold(instance, graph_mask_thresh, 255, cv2.THRESH_BINARY)[1]
