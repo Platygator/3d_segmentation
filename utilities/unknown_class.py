@@ -60,7 +60,7 @@ class UnknownRegister:
         if region.nonzero()[0].shape[0] <= self._small_treshold:
             self._label[region.nonzero()] = self._unknown_label
 
-    def unconnected_patches(self, region: np.ndarray):
+    def disconnected_patches(self, region: np.ndarray):
         if region.any():
             connected, _ = ndimage.label(region > 0)
             uni, count = np.unique(connected, return_counts=True)
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     un = ur.retrieve_label_img()
     ur.small_region(after)
     un = ur.retrieve_label_img()
-    ur.unconnected_patches(after)
+    ur.disconnected_patches(after)
     un = ur.retrieve_label_img()
     ur.refinement_lost(before, after)
     un = ur.retrieve_label_img()
