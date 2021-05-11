@@ -35,6 +35,7 @@ DATA_PATH = os.path.join(DATA_PATH, DATA_SET)
 min_number = 5
 growth_rate = 10
 shrink_rate = 10
+blur = 17  # relative to mask size
 largest_only = False
 fill = False
 
@@ -43,12 +44,12 @@ refinement_method = "crf"
 # refinement_method = "graph"
 
 # crf param
-times = 10
-gsxy = 11
-gcompat = 11
-bsxy = 11
-brgb = 11
-bcompat = 11
+times = 7
+gsxy = 2
+gcompat = 3
+bsxy = 10
+brgb = 3
+bcompat = 15
 
 # graph cut param
 graph_mask_thresh = 125
@@ -59,7 +60,7 @@ border_thickness = 3
 
 # unknown parameters
 un_max_refinement_loss = 0.5
-un_small_tresh = 100
+un_small_tresh = 500
 
 generate_new_cluster = False
 visualization = False
