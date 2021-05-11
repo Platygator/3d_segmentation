@@ -30,8 +30,8 @@ DATA_SET = "simulation_3"
 
 DATA_PATH = os.path.join(DATA_PATH, DATA_SET)
 
-# label generation param
-depth_range = 0.3  # allowed deviation from a point to the depth map
+# mask generation param
+# depth_range = 0.3  # allowed deviation from a point to the depth map
 min_number = 5
 growth_rate = 10
 shrink_rate = 10
@@ -43,11 +43,19 @@ refinement_method = "crf"
 # refinement_method = "graph"
 
 # crf param
-t = 10
+times = 10
+gsxy = 11
+gcompat = 11
+bsxy = 11
+brgb = 11
+bcompat = 11
 
 # graph cut param
 graph_mask_thresh = 125
 iter_count = 5
+
+# label generation
+border_thickness = 3
 
 # unknown parameters
 un_max_refinement_loss = 0.5

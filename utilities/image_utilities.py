@@ -20,12 +20,13 @@ import pydensecrf.densecrf as dcrf
 from pydensecrf.utils import unary_from_labels, unary_from_softmax
 
 
-def crf_refinement(img: np.ndarray, mask: np.ndarray, t: int, n_classes: int) -> np.ndarray:
+def crf_refinement(img: np.ndarray, mask: np.ndarray, times: int,
+                   gsxy, gcompat, bsxy, brgb, bcompat, n_classes: int = 2) -> np.ndarray:
     """
     Based on this dudes code: https://github.com/seth814/Semantic-Shapes/blob/master/CRF%20Cat%20Demo.ipynb
     :param img: reprojected_cloud image
     :param mask: label mask
-    :param t: UNKNOWN! TODO find out
+    :param times: repetitions
     :param n_classes: number of classes (actually always 2 here)
     :return: refined label image
     """
@@ -43,14 +44,14 @@ def crf_refinement(img: np.ndarray, mask: np.ndarray, t: int, n_classes: int) ->
     d = dcrf.DenseCRF2D(img.shape[1], img.shape[0], n_classes)
 
     d.setUnaryEnergy(unary)
-    d.addPairwiseGaussian(sxy=(5, 5), compat=10, kernel=dcrf.DIAG_KERNEL,
+    d.addPairwiseGaussian(sxy=gsxy, compat=gcompat, kernel=dcrf.DIAG_KERNEL,
                           normalization=dcrf.NORMALIZE_SYMMETRIC)
 
-    d.addPairwiseBilateral(sxy=(10, 10), srgb=(13, 13, 13), rgbim=img,
-                           compat=10,
+    d.addPairwiseBilateral(sxy=bsxy, srgb=brgb, rgbim=img,
+                           compat=bcompat,
                            kernel=dcrf.DIAG_KERNEL,
                            normalization=dcrf.NORMALIZE_SYMMETRIC)
-    Q = d.inference(t)
+    Q = d.inference(times)
     res = np.argmax(Q, axis=0).reshape((img.shape[0], img.shape[1]))
     res *= 255
     res = res.astype('uint8')
@@ -74,6 +75,8 @@ def largest_region(mask: np.ndarray) -> np.ndarray:
     # TODO maybe differentiate between border rocks and center rocks
     # instance = np.pad(instance, [[1, 1], [1, 1]], constant_values=1)
 
+    if not mask.any():
+        return mask
     connected, _ = ndimage.label(mask > 0)
     uni, count = np.unique(connected, return_counts=True)
     uni = np.delete(uni, np.argmax(count))
