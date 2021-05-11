@@ -35,8 +35,8 @@ depth_range = 0.3  # allowed deviation from a point to the depth map
 min_number = 5
 growth_rate = 10
 shrink_rate = 10
-largest_only = True
-fill = True
+largest_only = False
+fill = False
 
 
 refinement_method = "crf"

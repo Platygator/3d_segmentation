@@ -107,7 +107,7 @@ def load_images(data_path: str = DATA_PATH, positions: {str: np.array} = POSE_DI
 
 def IoU(label: np.ndarray, ground_truth: np.ndarray) -> (np.ndarray, float):
     """
-    Calculate Intersection of Union
+    Calculate Intersection over Union
     :param label: generated label
     :param ground_truth: ground truth to compare to
     :return: IoU per instance and mean IoU
