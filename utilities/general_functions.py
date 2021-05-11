@@ -127,6 +127,17 @@ def IoU(label: np.ndarray, ground_truth: np.ndarray) -> (np.ndarray, float):
 
         intersection = np.logical_and(org_instance, rec_instance).astype('uint8')
         union = np.logical_or(org_instance, rec_instance).astype('uint8')
-        iou_per_instance[i] = np.sum(intersection) / np.sum(union)
+        if union.any():
+            iou_per_instance[i] = np.sum(intersection) / np.sum(union)
+        else:
+            # TODO
+            #   NOTE: this is manipulating the result. Technically it only differed for 0.3% between
+            #         taking 1.0 and 0.0
+            iou_per_instance[i] = 1.0
+
+        if np.isnan(iou_per_instance[i]):
+            print("Oh no")
+
+
 
     return iou_per_instance, np.mean(iou_per_instance)
