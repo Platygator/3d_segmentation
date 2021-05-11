@@ -13,12 +13,9 @@ Library version:
 
 import open3d as o3d
 import numpy as np
-import cv2
 
 from utilities import *
 from settings import *
-
-DATA_PATH
 
 # LOADING
 try:
@@ -30,8 +27,7 @@ except FileNotFoundError:
 
 # PROJECTION
 trans_mat = np.eye(4)
-unknown_reg = UnknownRegister(width=WIDTH, height=HEIGHT,
-                              small_treshold=un_small_tresh, max_refinement_loss=un_max_refinement_loss)
+lg = LabelGenerator()
 for image, position, depth_map, name in load_images():
 
     # build transformation matrix
@@ -50,16 +46,11 @@ for image, position, depth_map, name in load_images():
     #     o3d.visualization.draw_geometries([cloud, name_frame, origin_frame], _width=3000, _height=1800,
     #                                       window_name=f"Frame {name}")
 
-    # project, generate a _label and save it as a set of masks
+    # project, generate a label and save it as a set of masks
     projection, distance_map = reproject(points=cloud.points, color=cloud.colors, label=labels,
-                           transformation_mat=trans_mat, depth_map=depth_map, depth_range=depth_range,
+                           transformation_mat=trans_mat, depth_map=depth_map,
                            save_img=visualization, name=name)
-    generate_masks(projection=projection, original=image, growth_rate=growth_rate, shrink_rate=shrink_rate,
-                   distance_map=distance_map, unknown_reg=unknown_reg,
-                   min_number=min_number, name=name, refinement_method=refinement_method, fill=fill,
-                   largest=largest_only, graph_thresh=graph_mask_thresh, t=t, iter_count=iter_count)
-    unknown_mask = unknown_reg.retrieve_label_img()
-    cv2.imwrite(f"{DATA_PATH}/unknown/{name}.png", unknown_mask)
+    lg.main(projection=projection, original=image, distance_map=distance_map, name=name)
 
 # VISUALIZATION
 if visualization:

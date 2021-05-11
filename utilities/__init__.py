@@ -11,8 +11,8 @@ Library version:
 
 
 """
-from .clustering_label_gen import km_cluster, dbscan_cluster, reproject, generate_masks
+from .clustering_label_gen import km_cluster, dbscan_cluster, reproject
 from .general_functions import rotation_matrix, load_images, IoU
 from .point_cloud_filter import delete_radius, delete_above, delete_below,\
     move_along_normals, reorient_normals, remove_statistical_outliers
-from .unknown_class import UnknownRegister
+from .label_generator_class import LabelGenerator
