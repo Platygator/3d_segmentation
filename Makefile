@@ -18,7 +18,7 @@ export PYTHONPATH=$PYTHONPATH:./
 run_test:
 	$(VENV)/bin/python3 ./tools/clear_results.py
 	$(VENV)/bin/python3 ./main.py
-	$(VENV)/bin/python3 ./tools/create_label_from_masks.py
+	#$(VENV)/bin/python3 ./tools/create_label_from_masks.py
 	$(VENV)/bin/python3 ./tools/IoU.py
 
 IoU:
