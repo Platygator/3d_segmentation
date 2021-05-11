@@ -22,7 +22,7 @@ class LabelGenerator:
     """Handle all label instances"""
 
     def __init__(self, border_thickness: int = border_thickness,  growth_rate: int = growth_rate, shrink_rate: int = shrink_rate,
-                 min_number: int = min_number, refinement_method: str = refinement_method,
+                 min_number: int = min_number, refinement_method: str = refinement_method, blur: int = blur,
                  gsxy: int = gsxy, gcompat: int = gcompat, bsxy: int = bsxy, brgb: int = brgb, bcompat: int = bcompat,
                  times: int = times, iter_count: int = iter_count, height: int = HEIGHT, width: int = WIDTH,
                  data_path: str = DATA_PATH, **kwargs):
@@ -47,6 +47,7 @@ class LabelGenerator:
         self.min_number = min_number
         self.growth_rate = growth_rate
         self.shrink_rate = shrink_rate
+        self.blur = blur
         self.refinement_method = refinement_method
         # graph cut
         self.iter_count = iter_count
@@ -144,7 +145,6 @@ class LabelGenerator:
         empty_masks = []
         for i in range(labels_present.shape[0]):
             master = self.masks[i, :, :].copy()
-            self.unknown_reg.small_region(region=master)
             if master.any():
                 for j in range(i + 1, labels_present.shape[0]):
                     self.masks[j, :, :] = cv2.bitwise_or(self.masks[j, :, :],  self.masks[j, :, :],
@@ -167,13 +167,14 @@ class LabelGenerator:
         for i, label_num in enumerate(labels_present):
             instance = self.masks[i, :, :]
             print(label_num, ", ", end='')
+            self.unknown_reg.disconnected_patches(region=self.masks[i, :, :])
             instance = largest_region(instance) if largest_only else instance
             instance = fill_holes(instance) if fill else instance
 
             instance_before = instance.copy()
-            # instance = cv2.GaussianBlur(instance, (101, 101), 0)
-            # TODO adaptive blur
-            instance = cv2.GaussianBlur(instance, (51, 51), 0)
+            blur = int(self.blur / 2500 * instance.nonzero()[0].shape[0])
+            blur = blur + 1 if blur % 2 == 0 else blur
+            instance = cv2.GaussianBlur(instance, (blur, blur), 0)
 
             if refinement_method == "crf":
                 self.masks[i, :, :] = crf_refinement(img=original, mask=instance, times=self.times,
@@ -188,7 +189,8 @@ class LabelGenerator:
                 self.masks[i, :, :] = instance
 
             self.unknown_reg.refinement_lost(before=instance_before, after=self.masks[i, :, :])
-            self.unknown_reg.unconnected_patches(region=self.masks[i, :, :])
+            self.unknown_reg.disconnected_patches(region=self.masks[i, :, :])
+            self.unknown_reg.small_region(region=self.masks[i, :, :])
 
             self.masks[i, :, :] = largest_region(self.masks[i, :, :])  # if largest_only else self.masks[i, :, :]
             self.masks[i, :, :] = fill_holes(self.masks[i, :, :])  # if fill else self.masks[i, :, :]
@@ -206,14 +208,15 @@ class LabelGenerator:
 
                 border = cv2.filter2D(mask_img, -1, self.kernel)
                 border = cv2.dilate(border, np.ones((5, 5), 'uint8'), iterations=self.border_thickness)
-                # # make sure the border is on top of stone
-                border *= mask_img
+                # make sure the border is on top of stone
+                border *= fill_holes(mask_img * 255) // 255
                 # turn into 0 and 1
                 border = np.array(border, dtype=bool).astype("uint8")
 
                 border_sum += border
 
-        self.label = segments_sum + border_sum
+        self.label = np.array(segments_sum, dtype=bool).astype("uint8") + \
+                     np.array(border_sum, dtype=bool).astype("uint8")
         self.label = np.rint(self.label * 127.5).astype('uint8')
 
     def _apply_unknown(self):
