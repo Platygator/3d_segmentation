@@ -26,8 +26,8 @@ try:
     os.mkdir(pathn + "/ground_truth")
     os.mkdir(pathn + "/images")
     os.mkdir(pathn + "/labels")
-    os.mkdir(pathn + "/unknown")
-    os.mkdir(pathn + "/masks")
+    # os.mkdir(pathn + "/unknown")
+    # os.mkdir(pathn + "/masks")
     os.mkdir(pathn + "/pointclouds")
     os.mkdir(pathn + "/results")
 except FileExistsError:
