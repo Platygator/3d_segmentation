@@ -19,7 +19,7 @@ from sklearn.cluster import DBSCAN
 
 from .general_functions import turn_ply_to_npy
 from settings import CAM_MAT, DIST_MAT, WIDTH, HEIGHT
-from camera_parameters import *
+import numpy as np
 
 
 @turn_ply_to_npy
