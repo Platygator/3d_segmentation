@@ -15,19 +15,18 @@ all: venv
 venv: $(VENV)/bin/activate
 export PYTHONPATH=$PYTHONPATH:./
 
-run_test:
+generate:
 	$(VENV)/bin/python3 ./tools/clear_results.py
 	$(VENV)/bin/python3 ./main.py
-	#$(VENV)/bin/python3 ./tools/create_label_from_masks.py
 	$(VENV)/bin/python3 ./tools/IoU.py
 
 IoU:
 	$(VENV)/bin/python3 ./tools/IoU.py
 
 txt_to_npy:
-	$(VENV)/bin/python3 ./tools/txt_to_npy.py -s simulation_2
+	$(VENV)/bin/python3 ./tools/txt_to_npy.py
 
-clean:
-	rm -rf ./$(VENV)
-	rm -rf ./hubert.egg-info
-	find -name "*.pyc" -delete
+#clean:
+#	rm -rf ./$(VENV)
+#	rm -rf ./hubert.egg-info
+#	find -name "*.pyc" -delete
