@@ -22,8 +22,8 @@ CAM_MAT, DIST_MAT, HEIGHT, WIDTH = load_camera_param(camera=camera)
 
 
 # Define path to data and to specific data set
-# DATA_PATH = "/Users/jan/Programming/PycharmProjects/master/3d_segmentation/data"
-DATA_PATH = "/Volumes/Transfer/master/3d_sets"
+DATA_PATH = "/Users/jan/Programming/PycharmProjects/master/3d_sets"
+# DATA_PATH = "/Volumes/Transfer/master/3d_sets"
 # DATA_SET = "reconstruction_1"
 # DATA_SET = "reconstruction_2"
 DATA_SET = "simulation_3"

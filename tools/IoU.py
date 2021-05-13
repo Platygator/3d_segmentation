@@ -24,7 +24,7 @@ from datetime import datetime
 import numpy as np
 
 
-experiment_name = "first_full_test"
+experiment_name = "unknown_improved"
 label_names = [os.path.basename(k) for k in glob.glob(f'{DATA_PATH + "/labels/"}*.png')]
 
 global_per_instance = np.zeros(3)
