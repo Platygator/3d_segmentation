@@ -88,19 +88,20 @@ def rotation_matrix(roll: float, pitch: float, yaw: float) -> np.ndarray:
     return np.dot(R_z, np.dot(R_y, R_x)).T
 
 
-def load_images(data_path: str = DATA_PATH, positions: {str: np.array} = POSE_DIC) -> [np.ndarray, np.ndarray]:
+def load_images(data_path: str = DATA_PATH, positions: {str: np.array} = POSE_DIC, image_path: str = IMAGES,
+                depth_path: str = DEPTH) -> [np.ndarray, np.ndarray]:
     """
     Generator to load all images and there respective data from the data_path folder
     :param data_path: folder containing depth, images, masks, positions, pointclouds
     :param positions: Colmap provided positions
     :return: yield, image, position, depth_map and name
     """
-    instance_names = [os.path.basename(k)[:-4] for k in glob(f'{data_path + IMAGES}*.png')]
+    instance_names = [os.path.basename(k)[:-4] for k in glob(f'{data_path + image_path}*.png')]
     n_img = len(instance_names)
     for i, name in enumerate(instance_names):
         print(f"[INFO] Processing image {i+1} / {n_img}")
-        image = cv2.imread(data_path + IMAGES + name + '.png', 1)
-        depth_map = read_depth_map(data_path + DEPTH + name + '.png.geometric.bin')
+        image = cv2.imread(data_path + image_path + name + '.png', 1)
+        depth_map = read_depth_map(data_path + depth_path + name + '.png.geometric.bin')
         position = positions[name]
         yield image, position, depth_map, name
 
