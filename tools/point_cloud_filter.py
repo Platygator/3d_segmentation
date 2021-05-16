@@ -20,8 +20,8 @@ from utilities import *
 from settings import DATA_PATH, CAM_MAT, DIST_MAT
 
 # rouge filter
-nb_neighbors = 20
-std_ratio = 1.0
+nb_neighbors = 5
+std_ratio = 0.2
 
 
 cloud = o3d.io.read_point_cloud(f"{DATA_PATH}/pointclouds/point_cloud.ply")
@@ -31,6 +31,47 @@ origin_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
 
 # remove outliers
 cloud = remove_statistical_outliers(cloud=cloud, nb_neighbors=nb_neighbors, std_ratio=std_ratio)
+# o3d.visualization.draw_geometries([cloud], width=3000, height=1800, window_name="Plane filtered",
+#                                   lookat=np.array([[0, 0, 2.0]], dtype='float64').T,
+#                                   up=np.array([[0, -1.0, 0]], dtype='float64').T,
+#                                   front=np.array([[0.2, 0.7, -1.0]], dtype='float64').T,
+#                                   zoom=0.6)
+# quit()
+# plane_model, inliers = cloud.segment_plane(distance_threshold=0.1, ransac_n=3, num_iterations=1000)
+#
+# inlier_cloud = cloud.select_by_index(inliers)
+# outlier_cloud = cloud.select_by_index(inliers, invert=True)
+#
+# inlier_cloud.paint_uniform_color([1, 0, 0])
+# # outlier_cloud.paint_uniform_color([1, 0, 0])
+#
+# o3d.visualization.draw_geometries([inlier_cloud, outlier_cloud], width=3000, height=1800, window_name="Plane filtered",
+#                                   lookat=np.array([[0, 0, 0]], dtype='float64').T,
+#                                   up=np.array([[0, -1.0, 0]], dtype='float64').T,
+#                                   front=np.array([[0.2, 0.7, -1.0]], dtype='float64').T,
+#                                   zoom=0.6)
+#
+# cloud.points = outlier_cloud.points
+# cloud.colors = outlier_cloud.colors
+#
+# cloud = remove_statistical_outliers(cloud=cloud, nb_neighbors=nb_neighbors, std_ratio=nb_neighbors)
+# inliers = delete_radius(points=cloud.points, radius=6.5)
+# # cloud.paint_uniform_color([1, 0, 0])
+#
+# inlier_cloud = cloud.select_by_index(inliers)
+# outlier_cloud = cloud.select_by_index(inliers, invert=True)
+#
+# # inlier_cloud.paint_uniform_color([1, 0, 0])
+# outlier_cloud.paint_uniform_color([1, 0, 0])
+#
+# o3d.visualization.draw_geometries([inlier_cloud, outlier_cloud], width=3000, height=1800, window_name="Plane filtered",
+#                                   lookat=np.array([[0, 0, 0]], dtype='float64').T,
+#                                   up=np.array([[0, -1.0, 0]], dtype='float64').T,
+#                                   front=np.array([[0.2, 0.7, -1.0]], dtype='float64').T,
+#                                   zoom=0.6)
+# quit()
+# # TODO think about using cylindrical ransac for center detection!
+o3d.visualization.draw_geometries([cloud], width=3000, height=1800, window_name="Clustered")
 
 cloud.estimate_normals()
 cloud_points = np.asarray(cloud.points)
@@ -76,7 +117,7 @@ abs_norm[abs_norm == 0] = -1
 normal_reorientation /= abs_norm
 normal_reorientation[normal_reorientation == 0] = 1
 normals *= (normal_reorientation * -1)
-normals[mask_unsure[:, 0], :] = [0, 0, 1]
+# normals[mask_unsure[:, 0], :] = [0, 0, 1]
 cloud.normals = o3d.utility.Vector3dVector(normals)
 
 # save
