@@ -20,8 +20,11 @@ import pydensecrf.densecrf as dcrf
 from pydensecrf.utils import unary_from_labels, unary_from_softmax
 
 
-def crf_refinement(img: np.ndarray, mask: np.ndarray, times: int,
-                   gsxy, gcompat, bsxy, brgb, bcompat, n_classes: int = 2) -> np.ndarray:
+def crf_refinement(img: np.ndarray, mask: np.ndarray, depth: np.ndarray, times: int,
+                   gsxy: int, gcompat: int,
+                   bsxy: int, brgb: int, bcompat: int,
+                   dsxy: int, dddd: int, dcompat: int,
+                   n_classes: int = 2) -> np.ndarray:
     """
     Based on this dudes code: https://github.com/seth814/Semantic-Shapes/blob/master/CRF%20Cat%20Demo.ipynb
     :param img: reprojected_cloud image
@@ -51,6 +54,14 @@ def crf_refinement(img: np.ndarray, mask: np.ndarray, times: int,
                            compat=bcompat,
                            kernel=dcrf.DIAG_KERNEL,
                            normalization=dcrf.NORMALIZE_SYMMETRIC)
+    depth * 255/depth.max()
+    depth = depth.astype('uint8')
+    depth = depth[:, :, np.newaxis].repeat(3, axis=2)
+    d.addPairwiseBilateral(sxy=dsxy, srgb=dddd, rgbim=depth,
+                           compat=dcompat,
+                           kernel=dcrf.DIAG_KERNEL,
+                           normalization=dcrf.NORMALIZE_SYMMETRIC)
+
     Q = d.inference(times)
     res = np.argmax(Q, axis=0).reshape((img.shape[0], img.shape[1]))
     res *= 255

@@ -49,7 +49,7 @@ DATA_PATH = "/Users/jan/Programming/PycharmProjects/master/3d_sets"
 # DATA_PATH = "/Volumes/Transfer/master/3d_sets"
 # DATA_SET = "reconstruction_1"
 # DATA_SET = "reconstruction_2"
-DATA_SET = "simulation_2"
+DATA_SET = "simulation_8"
 
 try:
     DATA_SET = DATA_SET[-1] + str(os.environ['SIM'])
@@ -79,6 +79,9 @@ gcompat = 3
 bsxy = 10
 brgb = 3
 bcompat = 15
+dsxy = 15
+dddd = 5
+dcompat = 8
 
 # graph cut param
 graph_mask_thresh = 125
@@ -92,4 +95,4 @@ un_max_refinement_loss = 0.5
 un_small_tresh = 500
 
 generate_new_cluster = False
-visualization = False
+visualization = True

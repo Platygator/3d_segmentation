@@ -23,7 +23,9 @@ class LabelGenerator:
 
     def __init__(self, border_thickness: int = border_thickness,  growth_rate: int = growth_rate, shrink_rate: int = shrink_rate,
                  min_number: int = min_number, refinement_method: str = refinement_method, blur: int = blur,
-                 gsxy: int = gsxy, gcompat: int = gcompat, bsxy: int = bsxy, brgb: int = brgb, bcompat: int = bcompat,
+                 gsxy: int = gsxy, gcompat: int = gcompat,
+                 bsxy: int = bsxy, brgb: int = brgb, bcompat: int = bcompat,
+                 dsxy: int = dsxy, dddd: int = dddd, dcompat: int = dcompat,
                  times: int = times, iter_count: int = iter_count, height: int = HEIGHT, width: int = WIDTH,
                  data_path: str = DATA_PATH, **kwargs):
         """Constructor for LabelGenerator
@@ -53,11 +55,17 @@ class LabelGenerator:
         self.iter_count = iter_count
         # crf
         self.times = times
+            # Gaussian
         self.gsxy = gsxy
         self.gcompat = gcompat
+            # Bilateral Colour
         self.bsxy = bsxy
         self.brgb = brgb
         self.bcompat = bcompat
+            # Bilateral Depth
+        self.dsxy = dsxy
+        self.dddd = dddd
+        self.dcompat = dcompat
 
         # REGISTER PARAMETER SETTINGS
         self.largest_only = False
@@ -153,9 +161,9 @@ class LabelGenerator:
                 empty_masks.append(i)
 
         # debug option to filter projection image
-        # for i, instance in enumerate(labels_present):
-        #     filter_img = cv2.bitwise_not((projection == instance) * cv2.bitwise_not(masks[i, :, :])) // 255
-        #     projection *= filter_img
+        for i, instance in enumerate(labels_present):
+            filter_img = cv2.bitwise_not((projection == instance) * cv2.bitwise_not(self.masks[i, :, :])) // 255
+            projection *= filter_img
         # debug purposes (projection != 0).astype('uint8') * 255
 
         # delete empty masks
@@ -179,7 +187,8 @@ class LabelGenerator:
             if refinement_method == "crf":
                 self.masks[i, :, :] = crf_refinement(img=original, mask=instance, times=self.times,
                                             gsxy=self.gsxy, gcompat=self.gcompat,
-                                            bsxy=self.bsxy, brgb=self.brgb, bcompat=self.bcompat)
+                                            bsxy=self.bsxy, brgb=self.brgb, bcompat=self.bcompat,
+                                            dsxy=self.dsxy, dddd=self.dddd, dcompat=self.dcompat)
             elif refinement_method == "graph":
                 instance = cv2.threshold(instance, graph_mask_thresh, 255, cv2.THRESH_BINARY)[1]
                 self.masks[i, :, :] = graph_cut_refinement(img=original, mask=instance.copy(), iter_count=self.iter_count)
