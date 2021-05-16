@@ -81,7 +81,7 @@ def delete_above(points: np.ndarray, threshold: float) -> np.ndarray:
 
 
 @turn_ply_to_npy
-@turn_npy_to_ply
+# @turn_npy_to_ply
 def delete_radius(points: np.ndarray, radius: float) -> np.ndarray:
     """
     Delete all points outside the radius
@@ -89,12 +89,13 @@ def delete_radius(points: np.ndarray, radius: float) -> np.ndarray:
     :param radius: radius
     :return: filtered points
     """
-    filtered = points.copy()
     distance = np.linalg.norm(points[:, 0:2], axis=1)
     mask = distance > radius
-    filtered = np.delete(filtered, mask, 0)
+    inliers = np.arange(0, points.shape[0])
+    inliers = np.delete(inliers, mask, 0)
+    # filtered = np.delete(filtered, mask, 0)
 
-    return filtered
+    return inliers.tolist()
 
 
 def remove_statistical_outliers(cloud: o3d.geometry.PointCloud,
