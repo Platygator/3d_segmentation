@@ -19,14 +19,14 @@ from settings import DATA_PATH
 
 # cluster pre processing param
 normal_direction = np.array([0, 0, 1])
-step = 0.25
+step = 0.6
 
 # chose cluster method
 cluster_method = "kmeans"
 # cluster_method = "dbscan"
 
 # kmeans param
-k = 12  # 55
+k = 29  # 55
 # dbscan param
 epsilon = 1.0
 
@@ -55,8 +55,6 @@ origin_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
 normal_moved = move_along_normals(points=cloud.points, normals=cloud.normals, step=step)
 cloud.points = normal_moved
 
-# o3d.visualization.draw_geometries([cloud], width=3000, height=1800, window_name="Contraction")
-
 if cluster_method == 'kmeans':
     clustered, labels = km_cluster(points=cloud.points, k=k)
 elif cluster_method == 'dbscan':
@@ -67,8 +65,6 @@ cloud.colors = clustered
 
 normal_moved_back = move_along_normals(points=cloud.points, normals=cloud.normals, step=-step)
 cloud.points = normal_moved_back
-
-# o3d.visualization.draw_geometries([cloud], width=3000, height=1800, window_name="PRESENTATION")
 
 # save
 o3d.io.write_point_cloud(f"{DATA_PATH}/pointclouds/clustered.ply", cloud)
