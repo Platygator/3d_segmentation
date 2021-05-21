@@ -79,6 +79,8 @@ normals = np.asarray(cloud.normals)
 
 normal_reorientation = np.zeros([normals.shape[0], 1])
 for image, position, normal_map, name in load_images(depth_path="/normals/"):
+    if image is None:
+        continue
     camera_center = np.array([[position[4], position[5], position[6]]])
     trans_mat = np.eye(4)
     R = cloud.get_rotation_matrix_from_quaternion([position[0], position[1], position[2], position[3]])

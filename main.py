@@ -50,7 +50,7 @@ for image, position, depth_map, name in load_images():
     projection, distance_map = reproject(points=cloud.points, color=cloud.colors, label=labels,
                            transformation_mat=trans_mat, depth_map=depth_map,
                            save_img=visualization, name=name)
-    lg.main(projection=projection, original=image, distance_map=distance_map, name=name)
+    lg.main(projection=projection, original=image, depth=depth_map, distance_map=distance_map, name=name)
 
 # VISUALIZATION
 if visualization:
