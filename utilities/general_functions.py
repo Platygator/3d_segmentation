@@ -101,7 +101,11 @@ def load_images(data_path: str = DATA_PATH, positions: {str: np.array} = POSE_DI
     for i, name in enumerate(instance_names):
         print(f"[INFO] Processing image {i+1} / {n_img}")
         image = cv2.imread(data_path + image_path + name + '.png', 1)
-        depth_map = read_depth_map(data_path + depth_path + name + '.png.geometric.bin')
+        try:
+            depth_map = read_depth_map(data_path + depth_path + name + '.png.geometric.bin')
+        except ValueError:
+            print(name)
+            yield None, None, None, None
         position = positions[name]
         yield image, position, depth_map, name
 
