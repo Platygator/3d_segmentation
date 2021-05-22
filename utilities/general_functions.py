@@ -99,7 +99,7 @@ def load_images(data_path: str = DATA_PATH, positions: {str: np.array} = POSE_DI
     instance_names = [os.path.basename(k)[:-4] for k in glob(f'{data_path + image_path}*.png')]
     n_img = len(instance_names)
     for i, name in enumerate(instance_names):
-        print(f"[INFO] Processing image {i+1} / {n_img}")
+        print(f"[INFO] Processing image {i+1} / {n_img} <- {name}")
         image = cv2.imread(data_path + image_path + name + '.png', 1)
         try:
             depth_map = read_depth_map(data_path + depth_path + name + '.png.geometric.bin')
