@@ -49,7 +49,7 @@ DATA_PATH = "/Users/jan/Programming/PycharmProjects/master/3d_sets"
 # DATA_PATH = "/Volumes/Transfer/master/3d_sets"
 # DATA_SET = "reconstruction_1"
 # DATA_SET = "reconstruction_2"
-DATA_SET = "simulation_3"
+DATA_SET = "simulation_8"
 
 try:
     DATA_SET = DATA_SET[-1] + str(os.environ['SIM'])
