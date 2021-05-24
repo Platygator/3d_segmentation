@@ -199,6 +199,7 @@ class LabelGenerator:
 
             self.unknown_reg.refinement_lost(before=instance_before, after=self.masks[i, :, :])
             self.unknown_reg.disconnected_patches(region=self.masks[i, :, :])
+            self.unknown_reg.holes(region=self.masks[i, :, :])
             self.unknown_reg.small_region(region=self.masks[i, :, :])
 
             self.masks[i, :, :] = largest_region(self.masks[i, :, :])  # if largest_only else self.masks[i, :, :]

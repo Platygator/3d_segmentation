@@ -14,6 +14,7 @@ Library version:
 
 import numpy as np
 from scipy import ndimage
+import cv2
 
 
 class UnknownRegister:
@@ -74,6 +75,19 @@ class UnknownRegister:
 
             # self._label = cv2.bitwise_or(self._label, self._label, mask=cv2.bitwise_not(unknown_region))
             self._label[unknown_region == 255] = self._unknown_label
+
+    def holes(self, region: np.ndarray):
+        mask = np.pad(region, [[1, 1], [1, 1]], constant_values=1)
+        mask = cv2.bitwise_not(mask)
+
+        connected, _ = ndimage.label(mask > 0)
+        uni, count = np.unique(connected, return_counts=True)
+        uni = np.delete(uni, np.argmax(count))
+        count = np.delete(count, np.argmax(count))
+        uni = np.delete(uni, np.argmax(count))
+
+        for n in uni:
+            self._label[np.where(connected == n)] = self._unknown_label
 
 
 if __name__ == '__main__':
