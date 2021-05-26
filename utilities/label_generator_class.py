@@ -180,9 +180,16 @@ class LabelGenerator:
             instance = fill_holes(instance) if fill else instance
 
             instance_before = instance.copy()
+            core = instance.copy()
+
             blur = int(self.blur / 2500 * instance.nonzero()[0].shape[0])
             blur = blur + 1 if blur % 2 == 0 else blur
             instance = cv2.GaussianBlur(instance, (blur, blur), 0)
+
+            # core = cv2.erode(core, np.ones((5, 5), 'uint8'), iterations=erode)
+            core = cv2.GaussianBlur(core, (blur, blur), 0)
+            core = cv2.threshold(core, 127, 255, cv2.THRESH_BINARY)[1]
+            instance[core == 255] = 255
 
             if refinement_method == "crf":
                 self.masks[i, :, :] = crf_refinement(img=original, mask=instance, depth=depth, times=self.times,
