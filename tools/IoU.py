@@ -24,7 +24,7 @@ from datetime import datetime
 import numpy as np
 
 
-experiment_name = "unknown_improved"
+experiment_name = "perfect_pc_local"
 label_names = [os.path.basename(k) for k in glob.glob(f'{DATA_PATH + "/labels/"}*.png')]
 
 global_per_instance = np.zeros(3)
@@ -40,6 +40,9 @@ for label_name in label_names:
         global_per_instance += per_instance
         global_mean += mean
 
+    if mean < 0.6:
+        print(mean)
+        print(label_name)
 global_per_instance /= count
 global_mean /= count
 
