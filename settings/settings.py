@@ -62,8 +62,8 @@ print("[INFO] Starting 3D Label Generator for :", DATA_PATH)
 # mask generation param
 # depth_range = 0.3  # allowed deviation from a point to the depth map
 min_number = 5
-growth_rate = 10
-shrink_rate = 10
+growth_rate = 5
+shrink_rate = 5
 blur = 17  # relative to mask size
 largest_only = False
 fill = False
