@@ -89,6 +89,8 @@ class UnknownRegister:
             count = np.delete(count, np.argmax(count))
             uni = np.delete(uni, np.argmax(count))
 
+            connected = connected[1:-1, 1:-1]
+
             for n in uni:
                 self._label[np.where(connected == n)] = self._unknown_label
 
