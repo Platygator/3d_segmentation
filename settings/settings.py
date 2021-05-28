@@ -49,7 +49,7 @@ DATA_PATH = "/Users/jan/Programming/PycharmProjects/master/3d_sets"
 # DATA_PATH = "/Volumes/Transfer/master/3d_sets"
 # DATA_SET = "reconstruction_1"
 # DATA_SET = "reconstruction_2"
-DATA_SET = "simulation_8"
+DATA_SET = "simulation_3"
 
 try:
     DATA_SET = DATA_SET[-1] + str(os.environ['SIM'])
@@ -59,14 +59,14 @@ except KeyError:
 DATA_PATH = os.path.join(DATA_PATH, DATA_SET)
 
 print("[INFO] Starting 3D Label Generator for :", DATA_PATH)
+
 # mask generation param
-# depth_range = 0.3  # allowed deviation from a point to the depth map
 min_number = 5
 growth_rate = 5
 shrink_rate = 5
-blur = 17  # relative to mask size
-largest_only = False
-fill = False
+blur = 3  # relative to mask size
+largest_only = True
+fill = True
 
 
 refinement_method = "crf"
@@ -76,12 +76,12 @@ refinement_method = "crf"
 times = 7
 gsxy = 2
 gcompat = 3
-bsxy = 10
+bsxy = 11
 brgb = 3
-bcompat = 15
-dsxy = 15
-dddd = 5
-dcompat = 8
+bcompat = 62
+dsxy = 20
+dddd = 1
+dcompat = 20
 
 # graph cut param
 graph_mask_thresh = 125
@@ -94,5 +94,4 @@ border_thickness = 3
 un_max_refinement_loss = 0.5
 un_small_tresh = 500
 
-generate_new_cluster = False
 visualization = False
