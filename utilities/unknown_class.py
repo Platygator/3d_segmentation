@@ -70,11 +70,10 @@ class UnknownRegister:
             largest_label = uni[np.argmax(count)]
 
             unknown_region = np.zeros_like(region, dtype='uint8')
-            unknown_region[np.where(connected != largest_label)] = 255
+            unknown_region[np.where(connected != largest_label)] = 1
             unknown_region[np.where(connected == 0)] = 0
 
-            # self._label = cv2.bitwise_or(self._label, self._label, mask=cv2.bitwise_not(unknown_region))
-            self._label[unknown_region == 255] = self._unknown_label
+            self._label[unknown_region == 1] = self._unknown_label
 
     def holes(self, region: np.ndarray):
         if region.any():
@@ -84,12 +83,11 @@ class UnknownRegister:
             mask = cv2.bitwise_not(mask)
 
             connected, _ = ndimage.label(mask > 0)
+            connected = connected[1:-1, 1:-1]
             uni, count = np.unique(connected, return_counts=True)
             uni = np.delete(uni, np.argmax(count))
             count = np.delete(count, np.argmax(count))
             uni = np.delete(uni, np.argmax(count))
-
-            connected = connected[1:-1, 1:-1]
 
             for n in uni:
                 self._label[np.where(connected == n)] = self._unknown_label
