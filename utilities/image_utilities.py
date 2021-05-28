@@ -34,17 +34,10 @@ def crf_refinement(img: np.ndarray, mask: np.ndarray, depth: np.ndarray, times: 
     :return: refined label image
     """
 
-    not_mask = cv2.bitwise_not(mask)
-    not_mask = np.expand_dims(not_mask, axis=2)
-    mask = np.expand_dims(mask, axis=2)
-    im_softmax = np.concatenate([not_mask, mask], axis=2)
-    im_softmax = im_softmax / 255.0
-
-    feat_first = im_softmax.transpose((2, 0, 1)).reshape((n_classes, -1))
-    unary = unary_from_softmax(feat_first)
-    unary = np.ascontiguousarray(unary)
-
+    n_classes += 1
     d = dcrf.DenseCRF2D(img.shape[1], img.shape[0], n_classes)
+
+    unary = unary_from_labels(mask, n_classes, 0.7, zero_unsure=False)
 
     d.setUnaryEnergy(unary)
     d.addPairwiseGaussian(sxy=gsxy, compat=gcompat, kernel=dcrf.DIAG_KERNEL,
@@ -61,11 +54,10 @@ def crf_refinement(img: np.ndarray, mask: np.ndarray, depth: np.ndarray, times: 
                            compat=dcompat,
                            kernel=dcrf.DIAG_KERNEL,
                            normalization=dcrf.NORMALIZE_SYMMETRIC)
-
     Q = d.inference(times)
     res = np.argmax(Q, axis=0).reshape((img.shape[0], img.shape[1]))
-    res *= 255
-    res = res.astype('uint8')
+    # res *= 255
+    # res = res.astype('uint8')
     return res
 
 
@@ -103,6 +95,8 @@ def largest_region(mask: np.ndarray) -> np.ndarray:
 
 
 def fill_holes(mask: np.ndarray) -> np.ndarray:
+    if not mask.any():
+        return mask
     mask = np.pad(mask, [[1, 1], [1, 1]], constant_values=1)
     mask = cv2.bitwise_not(mask)
 
