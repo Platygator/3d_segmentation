@@ -12,7 +12,7 @@ Library version:
 
 """
 
-from settings import DATA_PATH, experiment_name
+from settings import DATA_PATH, EXPERIMENT_NAME
 from utilities import IoU
 
 import glob
@@ -55,8 +55,8 @@ print(IoU_string)
 
 now = datetime.now().strftime("%d_%m_%H_%M")
 
-if experiment_name is not None:
-    name = experiment_name
+if EXPERIMENT_NAME is not None:
+    name = EXPERIMENT_NAME
 else:
     name = now
 shutil.copy(f'{os.getcwd()}/settings/settings.py',
