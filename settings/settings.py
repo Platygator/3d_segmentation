@@ -2,14 +2,7 @@
 Created by Jan Schiffeler on 05.04.21
 jan.schiffeler[at]gmail.com
 
-Changed by
-
-
-
-Python 3.
-Library version:
-
-
+Settings file for 3D Label Generator
 """
 import os
 import numpy as np
