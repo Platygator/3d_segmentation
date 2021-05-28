@@ -39,9 +39,9 @@ for label_name in label_names:
         global_per_instance += per_instance
         global_mean += mean
 
-    if mean < 0.6:
-        print(mean)
-        print(label_name)
+    # if mean < 0.6:
+    #     print(mean)
+    #     print(label_name)
 global_per_instance /= count
 global_mean /= count
 
