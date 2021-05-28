@@ -138,9 +138,11 @@ class LabelGenerator:
         labels_present, counts = np.unique(projection, return_counts=True)
         filter_small = counts < self.min_number
         labels_present = np.delete(labels_present, filter_small, 0)
-        labels_present = np.delete(labels_present, 0)
+        labels_present = np.delete(labels_present, 0, 0)
         labels_present = np.rint(labels_present).astype('uint8')
 
+        if labels_present.shape[0] == 0:
+            return None
         # OCCLUSION
         self.masks = np.zeros([labels_present.shape[0], projection.shape[0], projection.shape[1]], dtype='uint8')
         distances = []
@@ -223,37 +225,40 @@ class LabelGenerator:
         return all_masks_refined
 
     def _generate_label(self, all_masks):
-        segments_sum = np.zeros((self.height, self.width), dtype='uint8')
-        border_sum = np.zeros((self.height, self.width), dtype='uint8')
+        if all_masks is None:
+            self.label = np.zeros((self.height, self.width), dtype='uint8')
+        else:
+            segments_sum = np.zeros((self.height, self.width), dtype='uint8')
+            border_sum = np.zeros((self.height, self.width), dtype='uint8')
 
-        for instance in np.unique(all_masks):
-            if instance == 0:
-                continue
-            mask_img = np.zeros_like(all_masks)
-            mask_img[all_masks == instance] = 1
-            mask_img = mask_img.astype('uint8')
+            for instance in np.unique(all_masks):
+                if instance == 0:
+                    continue
+                mask_img = np.zeros_like(all_masks)
+                mask_img[all_masks == instance] = 1
+                mask_img = mask_img.astype('uint8')
 
-            self.unknown_reg.disconnected_patches(region=mask_img)
-            self.unknown_reg.holes(region=mask_img)
-            
-            mask_img = largest_region(mask_img)
-            mask_img = fill_holes(mask_img)
+                self.unknown_reg.disconnected_patches(region=mask_img)
+                self.unknown_reg.holes(region=mask_img)
 
-            if mask_img.any():
-                segments_sum += mask_img
+                mask_img = largest_region(mask_img)
+                mask_img = fill_holes(mask_img)
 
-                border = cv2.filter2D(mask_img, -1, self.kernel)
-                border = cv2.dilate(border, np.ones((5, 5), 'uint8'), iterations=self.border_thickness)
-                # make sure the border is on top of stone
-                border *= mask_img
-                # turn into 0 and 1
-                border = np.array(border, dtype=bool).astype("uint8")
+                if mask_img.any():
+                    segments_sum += mask_img
 
-                border_sum += border
+                    border = cv2.filter2D(mask_img, -1, self.kernel)
+                    border = cv2.dilate(border, np.ones((5, 5), 'uint8'), iterations=self.border_thickness)
+                    # make sure the border is on top of stone
+                    border *= mask_img
+                    # turn into 0 and 1
+                    border = np.array(border, dtype=bool).astype("uint8")
 
-        self.label = np.array(segments_sum, dtype=bool).astype("uint8") + \
-                     np.array(border_sum, dtype=bool).astype("uint8")
-        self.label = np.rint(self.label * 127.5).astype('uint8')
+                    border_sum += border
+
+            self.label = np.array(segments_sum, dtype=bool).astype("uint8") + \
+                         np.array(border_sum, dtype=bool).astype("uint8")
+            self.label = np.rint(self.label * 127.5).astype('uint8')
 
     def _apply_unknown(self):
         unknown = self.unknown_reg.retrieve_label_img()
