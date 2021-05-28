@@ -20,6 +20,10 @@ generate:
 	$(VENV)/bin/python3 ./main.py
 	$(VENV)/bin/python3 ./tools/IoU.py
 
+continue:
+	$(VENV)/bin/python3 ./main.py
+	$(VENV)/bin/python3 ./tools/IoU.py
+
 IoU:
 	$(VENV)/bin/python3 ./tools/IoU.py
 
