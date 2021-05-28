@@ -13,7 +13,7 @@ Library version:
 """
 import numpy as np
 import cv2
-from .image_utilities import crf_refinement, graph_cut_refinement, largest_region, fill_holes
+from .image_utilities import crf_refinement, largest_region, fill_holes
 from .unknown_class import UnknownRegister
 from settings import *
 
@@ -21,23 +21,39 @@ from settings import *
 class LabelGenerator:
     """Handle all label instances"""
 
-    def __init__(self, border_thickness: int = border_thickness,  growth_rate: int = growth_rate, shrink_rate: int = shrink_rate,
-                 min_number: int = min_number, refinement_method: str = refinement_method, blur: int = blur,
-                 gsxy: int = gsxy, gcompat: int = gcompat,
-                 bsxy: int = bsxy, brgb: int = brgb, bcompat: int = bcompat,
-                 dsxy: int = dsxy, dddd: int = dddd, dcompat: int = dcompat,
-                 times: int = times, iter_count: int = iter_count, height: int = HEIGHT, width: int = WIDTH,
+    def __init__(self, border_thickness: int = BORDER_THICKNESS,
+                 growth_rate: int = GROWTH_RATE, shrink_rate: int = SHRINK_RATE,
+                 min_number: int = MIN_NUMBER, blur: int = BLUR, blur_thresh: int = BLUR_THRESH,
+                 gsxy: int = GSXY, gcompat: int = GCOMPAT,
+                 bsxy: int = BSXY, brgb: int = BRGB, bcompat: int = BCOMPAT,
+                 dsxy: int = DSXY, dddd: int = DDDD, dcompat: int = DCOMPAT,
+                 times: int = TIMES, height: int = HEIGHT, width: int = WIDTH,
+                 un_small_thresh: int = UN_SMALL_THRESH, un_max_refinement_loss: float = UN_MAX_REFINEMENT_LOSS,
                  data_path: str = DATA_PATH, **kwargs):
-        """Constructor for LabelGenerator
+        """
+        Constructor for LabelGenerator
+        :param border_thickness: thickness of border in final label
         :param growth_rate: number of dilation steps
         :param shrink_rate: number of erosion steps after dilation
         :param min_number: minimum number of instanced of one label
-        :param refinement_method: Chose "crf" or "graph"
+        :param blur: blur applied to regions (region dependent)
+        :param blur_thresh: cutting off region here in binarization step
+        :param gsxy: standard deviation smoothness pixel position
+        :param gcompat: class compatibility gaussian
+        :param bsxy: standard deviation colour ref pixel position
+        :param brgb: standard deviation colour
+        :param bcompat: class compatibility bilateral colour
+        :param dsxy: standard deviation depth ref pixel position
+        :param dddd: standard deviation depth
+        :param dcompat: class compatibility gaussian bilateral depth
+        :param times: repetitions of CRF
+        :param height: image height
+        :param width: image width
+        :param un_small_thresh: unknown class threshold for which a mask is considered a small region
+        :param un_max_refinement_loss: percentage size change in refinement to be considered a unknown region
         :param data_path: folder containing depth, images, masks, positions, pointclouds
         :param kwargs: largest: bool -> use only the largest connected region
                        fill: bool -> fill holes
-                       graph_thresh: int -> threshold for gaussian blur for graph cut mask
-
         """
         # IMAGE AND LABEL
         self.height = height
@@ -50,19 +66,17 @@ class LabelGenerator:
         self.growth_rate = growth_rate
         self.shrink_rate = shrink_rate
         self.blur = blur
-        self.refinement_method = refinement_method
-        # graph cut
-        self.iter_count = iter_count
+        self.blur_thresh = blur_thresh
         # crf
         self.times = times
-            # Gaussian
+        #   Gaussian
         self.gsxy = gsxy
         self.gcompat = gcompat
-            # Bilateral Colour
+        #   Bilateral Colour
         self.bsxy = bsxy
         self.brgb = brgb
         self.bcompat = bcompat
-            # Bilateral Depth
+        #   Bilateral Depth
         self.dsxy = dsxy
         self.dddd = dddd
         self.dcompat = dcompat
@@ -76,8 +90,6 @@ class LabelGenerator:
                 self.largest_only = True
             elif argument == "fill" and value:
                 self.fill = True
-            elif argument == "graph_thresh":
-                self.graph_mask_thresh = value
             else:
                 print("[ERROR] Unknown keyword argument: ", argument)
 
@@ -90,7 +102,7 @@ class LabelGenerator:
 
         # INTO THE UNKNOWN
         self.unknown_reg = UnknownRegister(width=width, height=height,
-                                           small_treshold=un_small_tresh, max_refinement_loss=un_max_refinement_loss)
+                                           small_treshold=un_small_thresh, max_refinement_loss=un_max_refinement_loss)
         self.unknown_label = 50
 
     def main(self, projection: np.ndarray, original: np.ndarray, depth: np.ndarray, distance_map: np.ndarray, name: str):
@@ -137,14 +149,13 @@ class LabelGenerator:
         for i, label in enumerate(labels_present):
             instance = np.zeros_like(projection)
             instance[np.where(projection == label)] = 255
-            # self.unknown_reg.disconnected_patches(region=self.masks[i, :, :])
             instance = cv2.dilate(instance, np.ones((5, 5), 'uint8'), iterations=self.growth_rate)
             instance = cv2.erode(instance, np.ones((5, 5), 'uint8'), iterations=self.shrink_rate)
 
-            instance = largest_region(instance) if largest_only else instance
-            instance = fill_holes(instance) if fill else instance
+            instance = largest_region(instance) if self.largest_only else instance
+            instance = fill_holes(instance) if self.fill else instance
 
-            instance_before = instance.copy()
+            # instance_before = instance.copy()
             # core = instance.copy()
 
             blur = int(self.blur / 2500 * instance.nonzero()[0].shape[0])
@@ -188,15 +199,13 @@ class LabelGenerator:
 
         all_mask = np.zeros_like(self.masks[0], dtype='int64')
         for i, mask in enumerate(self.masks):
-            all_mask += mask.astype('uint8') // 255 * (i+1)
+            self.unknown_reg.disconnected_patches(region=mask)
+            all_mask += (mask // 255 * (i+1)).astype('int64')
         # import matplotlib.pyplot as plt
         # plt.imshow(all_mask)
         # plt.show()
 
         # REFINEMENT
-        # print("[INFO] Processing label number: ", end='')
-        # for i, label_num in enumerate(labels_present):
-        # if refinement_method == "crf":
         all_masks_refined = crf_refinement(img=original, mask=all_mask, depth=depth,
                                            times=self.times, n_classes=len(labels_present),
                                            gsxy=self.gsxy, gcompat=self.gcompat,
@@ -206,21 +215,9 @@ class LabelGenerator:
         # import matplotlib.pyplot as plt
         # plt.imshow(all_masks_refined)
         # plt.show()
-        # elif refinement_method == "graph":
-        #     instance = cv2.threshold(instance, graph_mask_thresh, 255, cv2.THRESH_BINARY)[1]
-        #     self.masks[i, :, :] = graph_cut_refinement(img=original, mask=instance.copy(), iter_count=self.iter_count)
-        # else:
-        #     print("[ERROR] No correct refinement method chosen!")
-        #     instance = cv2.threshold(instance, graph_mask_thresh, 255, cv2.THRESH_BINARY)[1]
-        #     self.masks[i, :, :] = instance
 
         # self.unknown_reg.refinement_lost(before=instance_before, after=self.masks[i, :, :])
-        # self.unknown_reg.disconnected_patches(region=self.masks[i, :, :])
-        # self.unknown_reg.holes(region=self.masks[i, :, :])
         # self.unknown_reg.small_region(region=self.masks[i, :, :])
-        #
-        # self.masks[i, :, :] = largest_region(self.masks[i, :, :])  # if largest_only else self.masks[i, :, :]
-        # self.masks[i, :, :] = fill_holes(self.masks[i, :, :])  # if fill else self.masks[i, :, :]
 
         print()
         return all_masks_refined
@@ -248,7 +245,7 @@ class LabelGenerator:
                 border = cv2.filter2D(mask_img, -1, self.kernel)
                 border = cv2.dilate(border, np.ones((5, 5), 'uint8'), iterations=self.border_thickness)
                 # make sure the border is on top of stone
-                border *= mask_img  # fill_holes(mask_img * 255) // 255
+                border *= mask_img
                 # turn into 0 and 1
                 border = np.array(border, dtype=bool).astype("uint8")
 
