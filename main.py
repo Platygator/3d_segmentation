@@ -25,10 +25,17 @@ except FileNotFoundError:
     print("[ERROR] No clustered files found")
     quit()
 
+# VISUALIZATION
+if VISUALIZATION:
+    origin_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
+        size=3, origin=[0, 0, 0])
+    o3d.visualization.draw_geometries([cloud, origin_frame], width=3000, height=1800, window_name="Origin Frame")
+
 # PROJECTION
 trans_mat = np.eye(4)
 lg = LabelGenerator()
-for image, position, depth_map, name in load_images():
+continue_generation = True
+for image, position, depth_map, name in load_images(continue_generation):
 
     # build transformation matrix
     R = cloud.get_rotation_matrix_from_quaternion([position[0], position[1], position[2], position[3]])
@@ -48,12 +55,6 @@ for image, position, depth_map, name in load_images():
 
     # project, generate a label and save it as a set of masks
     projection, distance_map = reproject(points=cloud.points, color=cloud.colors, label=labels,
-                           transformation_mat=trans_mat, depth_map=depth_map,
-                           save_img=visualization, name=name)
+                                         transformation_mat=trans_mat, depth_map=depth_map,
+                                         save_img=VISUALIZATION, name=name)
     lg.main(projection=projection, original=image, depth=depth_map, distance_map=distance_map, name=name)
-
-# VISUALIZATION
-if visualization:
-    origin_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
-        size=3, origin=[0, 0, 0])
-    o3d.visualization.draw_geometries([cloud, origin_frame], width=3000, height=1800, window_name="Origin Frame")
