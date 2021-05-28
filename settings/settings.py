@@ -43,7 +43,7 @@ camera = "simulation"
 
 CAM_MAT, DIST_MAT, HEIGHT, WIDTH = load_camera_param(cam=camera)
 
-experiment_name = "crf_all"
+EXPERIMENT_NAME = "crf_all"
 
 # Define path to data and to specific data set
 DATA_PATH = "/Users/jan/Programming/PycharmProjects/master/3d_sets"
@@ -58,38 +58,32 @@ DATA_PATH = os.path.join(DATA_PATH, DATA_SET)
 
 print("[INFO] Starting 3D Label Generator for :", DATA_PATH)
 
+
 # mask generation param
-min_number = 5
-growth_rate = 5
-shrink_rate = 5
-blur = 3  # relative to mask size
-largest_only = True
-fill = True
+MIN_NUMBER = 5          # minimum number of instanced of one label
+GROWTH_RATE = 5         # number of dilation steps
+SHRINK_RATE = 5         # number of erosion steps after dilation
+BLUR = 3                # blur applied to regions (region dependent)
+BLUR_THRESH = 125       # cutting off region here in binarization step
+LARGEST_ONLY = True     # use only the largest connected region for mask generation
+FILL = True             # fill holes for mask generation
 
+# CRF PARAM
+TIMES = 7               # repetitions of CRF
+GSXY = 2                # standard deviation smoothness pixel position
+GCOMPAT = 3             # class compatibility gaussian
+BSXY = 11               # standard deviation colour ref pixel position
+BRGB = 3                # standard deviation colour
+BCOMPAT = 62            # class compatibility bilateral colour
+DSXY = 20               # standard deviation depth ref pixel position
+DDDD = 1                # standard deviation depth
+DCOMPAT = 20            # class compatibility gaussian bilateral depth
 
-refinement_method = "crf"
-# refinement_method = "graph"
+# LABEL GENERATION
+BORDER_THICKNESS = 3    # thickness of border in final label
 
-# crf param
-times = 7
-gsxy = 2
-gcompat = 3
-bsxy = 11
-brgb = 3
-bcompat = 62
-dsxy = 20
-dddd = 1
-dcompat = 20
+# UNKNOWN PARAMETERS
+UN_MAX_REFINEMENT_LOSS = 0.5     # percentage size change in refinement to be considered a unknown region
+UN_SMALL_THRESH = 500            # unknown class threshold for which a mask is considered a small region
 
-# graph cut param
-graph_mask_thresh = 125
-iter_count = 5
-
-# label generation
-border_thickness = 3
-
-# unknown parameters
-un_max_refinement_loss = 0.5
-un_small_tresh = 500
-
-visualization = False
+VISUALIZATION = False            # Show clustered point cloud in beginning and save all reprojection images
