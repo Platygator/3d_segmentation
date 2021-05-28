@@ -21,6 +21,7 @@ from settings import DATA_PATH
 from .image_utilities import read_depth_map
 
 IMAGES = "/images/"
+LABELS = "/labels/"
 DEPTH = "/depth/"
 POSE_DIC = os.path.join(DATA_PATH, "positions.npy")
 POSE_DIC = np.load(POSE_DIC, allow_pickle=True).item()
@@ -88,8 +89,8 @@ def rotation_matrix(roll: float, pitch: float, yaw: float) -> np.ndarray:
     return np.dot(R_z, np.dot(R_y, R_x)).T
 
 
-def load_images(data_path: str = DATA_PATH, positions: {str: np.array} = POSE_DIC, image_path: str = IMAGES,
-                depth_path: str = DEPTH) -> [np.ndarray, np.ndarray]:
+def load_images(continue_generation: bool = False, data_path: str = DATA_PATH, positions: {str: np.array} = POSE_DIC,
+                image_path: str = IMAGES, depth_path: str = DEPTH, label_path: str = LABELS) -> [np.ndarray, np.ndarray]:
     """
     Generator to load all images and there respective data from the data_path folder
     :param data_path: folder containing depth, images, masks, positions, pointclouds
@@ -97,9 +98,13 @@ def load_images(data_path: str = DATA_PATH, positions: {str: np.array} = POSE_DI
     :return: yield, image, position, depth_map and name
     """
     instance_names = [os.path.basename(k)[:-4] for k in glob(f'{data_path + image_path}*.png')]
+    if continue_generation:
+        label_names = [os.path.basename(k)[:-4] for k in glob(f'{data_path + label_path}*.png')]
     n_img = len(instance_names)
     for i, name in enumerate(instance_names):
         print(f"[INFO] Processing image {i+1} / {n_img} <- {name}")
+        if continue_generation and (name in label_names):
+            continue
         image = cv2.imread(data_path + image_path + name + '.png', 1)
         try:
             depth_map = read_depth_map(data_path + depth_path + name + '.png.geometric.bin')
