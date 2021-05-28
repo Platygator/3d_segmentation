@@ -25,7 +25,7 @@ import numpy as np
 
 
 experiment_name = "perfect_pc_local"
-label_names = [os.path.basename(k) for k in glob.glob(f'{DATA_PATH + "/labels/"}*.png')]
+label_names = [os.path.basename(k) for k in glob.glob(f'{DATA_PATH + "/images/"}*.png')]
 
 global_per_instance = np.zeros(3)
 global_mean = 0
