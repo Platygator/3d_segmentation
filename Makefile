@@ -1,5 +1,5 @@
 # define the name of the virtual environment directory
-VENV := /Users/jan/.virtualenv/8_3d
+VENV := $(HOME)/.virtualenv/8_3d
 
 # default target, when make executed without arguments
 all: venv
