@@ -12,7 +12,7 @@ Library version:
 
 """
 
-from settings import DATA_PATH
+from settings import DATA_PATH, experiment_name
 from utilities import IoU
 
 import glob
@@ -24,7 +24,6 @@ from datetime import datetime
 import numpy as np
 
 
-experiment_name = "perfect_pc_local"
 label_names = [os.path.basename(k) for k in glob.glob(f'{DATA_PATH + "/images/"}*.png')]
 
 global_per_instance = np.zeros(3)
