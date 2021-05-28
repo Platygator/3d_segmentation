@@ -95,8 +95,8 @@ class LabelGenerator:
 
     def main(self, projection: np.ndarray, original: np.ndarray, depth: np.ndarray, distance_map: np.ndarray, name: str):
         self._clear()
-        self._generate_masks(projection=projection, original=original, depth=depth, distance_map=distance_map)
-        self._generate_label()
+        all_masks = self._generate_masks(projection=projection, original=original, depth=depth, distance_map=distance_map)
+        self._generate_label(all_masks=all_masks)
         self._apply_unknown()
         self._save(name=name)
 
@@ -137,9 +137,25 @@ class LabelGenerator:
         for i, label in enumerate(labels_present):
             instance = np.zeros_like(projection)
             instance[np.where(projection == label)] = 255
-            instance = cv2.dilate(instance, np.ones((5, 5), 'uint8'), iterations=growth_rate)
-            instance = cv2.erode(instance, np.ones((5, 5), 'uint8'), iterations=shrink_rate)
-            # TODO think about using concave hull with dilation
+            # self.unknown_reg.disconnected_patches(region=self.masks[i, :, :])
+            instance = cv2.dilate(instance, np.ones((5, 5), 'uint8'), iterations=self.growth_rate)
+            instance = cv2.erode(instance, np.ones((5, 5), 'uint8'), iterations=self.shrink_rate)
+
+            instance = largest_region(instance) if largest_only else instance
+            instance = fill_holes(instance) if fill else instance
+
+            instance_before = instance.copy()
+            # core = instance.copy()
+
+            blur = int(self.blur / 2500 * instance.nonzero()[0].shape[0])
+            blur = blur + 1 if blur % 2 == 0 else blur
+            instance = cv2.GaussianBlur(instance, (blur, blur), 0)
+
+            # core = cv2.GaussianBlur(core, (blur, blur), 0)
+            # core = cv2.threshold(core, 127, 255, cv2.THRESH_BINARY)[1]
+            # instance[core == 255] = 255
+
+            instance = cv2.threshold(instance, 127, 255, cv2.THRESH_BINARY)[1]
 
             self.masks[i, :, :] = instance.astype('uint8')
             distances.append(sum(distance_map[projection == label]) / distance_map[projection == label].shape[0])
@@ -170,63 +186,69 @@ class LabelGenerator:
         self.masks = np.delete(self.masks, empty_masks, 0)
         labels_present = np.delete(labels_present, empty_masks, 0)
 
+        all_mask = np.zeros_like(self.masks[0], dtype='int64')
+        for i, mask in enumerate(self.masks):
+            all_mask += mask.astype('uint8') // 255 * (i+1)
+        # import matplotlib.pyplot as plt
+        # plt.imshow(all_mask)
+        # plt.show()
+
         # REFINEMENT
-        print("[INFO] Processing label number: ", end='')
-        for i, label_num in enumerate(labels_present):
-            instance = self.masks[i, :, :]
-            print(label_num, ", ", end='')
-            self.unknown_reg.disconnected_patches(region=self.masks[i, :, :])
-            instance = largest_region(instance) if largest_only else instance
-            instance = fill_holes(instance) if fill else instance
+        # print("[INFO] Processing label number: ", end='')
+        # for i, label_num in enumerate(labels_present):
+        # if refinement_method == "crf":
+        all_masks_refined = crf_refinement(img=original, mask=all_mask, depth=depth,
+                                           times=self.times, n_classes=len(labels_present),
+                                           gsxy=self.gsxy, gcompat=self.gcompat,
+                                           bsxy=self.bsxy, brgb=self.brgb, bcompat=self.bcompat,
+                                           dsxy=self.dsxy, dddd=self.dddd, dcompat=self.dcompat)
 
-            instance_before = instance.copy()
-            core = instance.copy()
+        # import matplotlib.pyplot as plt
+        # plt.imshow(all_masks_refined)
+        # plt.show()
+        # elif refinement_method == "graph":
+        #     instance = cv2.threshold(instance, graph_mask_thresh, 255, cv2.THRESH_BINARY)[1]
+        #     self.masks[i, :, :] = graph_cut_refinement(img=original, mask=instance.copy(), iter_count=self.iter_count)
+        # else:
+        #     print("[ERROR] No correct refinement method chosen!")
+        #     instance = cv2.threshold(instance, graph_mask_thresh, 255, cv2.THRESH_BINARY)[1]
+        #     self.masks[i, :, :] = instance
 
-            blur = int(self.blur / 2500 * instance.nonzero()[0].shape[0])
-            blur = blur + 1 if blur % 2 == 0 else blur
-            instance = cv2.GaussianBlur(instance, (blur, blur), 0)
-
-            # core = cv2.erode(core, np.ones((5, 5), 'uint8'), iterations=erode)
-            core = cv2.GaussianBlur(core, (blur, blur), 0)
-            core = cv2.threshold(core, 127, 255, cv2.THRESH_BINARY)[1]
-            instance[core == 255] = 255
-
-            if refinement_method == "crf":
-                self.masks[i, :, :] = crf_refinement(img=original, mask=instance, depth=depth, times=self.times,
-                                                     gsxy=self.gsxy, gcompat=self.gcompat,
-                                                     bsxy=self.bsxy, brgb=self.brgb, bcompat=self.bcompat,
-                                                     dsxy=self.dsxy, dddd=self.dddd, dcompat=self.dcompat)
-            elif refinement_method == "graph":
-                instance = cv2.threshold(instance, graph_mask_thresh, 255, cv2.THRESH_BINARY)[1]
-                self.masks[i, :, :] = graph_cut_refinement(img=original, mask=instance.copy(), iter_count=self.iter_count)
-            else:
-                print("[ERROR] No correct refinement method chosen!")
-                instance = cv2.threshold(instance, graph_mask_thresh, 255, cv2.THRESH_BINARY)[1]
-                self.masks[i, :, :] = instance
-
-            self.unknown_reg.refinement_lost(before=instance_before, after=self.masks[i, :, :])
-            self.unknown_reg.disconnected_patches(region=self.masks[i, :, :])
-            self.unknown_reg.holes(region=self.masks[i, :, :])
-            self.unknown_reg.small_region(region=self.masks[i, :, :])
-
-            self.masks[i, :, :] = largest_region(self.masks[i, :, :])  # if largest_only else self.masks[i, :, :]
-            self.masks[i, :, :] = fill_holes(self.masks[i, :, :])  # if fill else self.masks[i, :, :]
+        # self.unknown_reg.refinement_lost(before=instance_before, after=self.masks[i, :, :])
+        # self.unknown_reg.disconnected_patches(region=self.masks[i, :, :])
+        # self.unknown_reg.holes(region=self.masks[i, :, :])
+        # self.unknown_reg.small_region(region=self.masks[i, :, :])
+        #
+        # self.masks[i, :, :] = largest_region(self.masks[i, :, :])  # if largest_only else self.masks[i, :, :]
+        # self.masks[i, :, :] = fill_holes(self.masks[i, :, :])  # if fill else self.masks[i, :, :]
 
         print()
+        return all_masks_refined
 
-    def _generate_label(self):
+    def _generate_label(self, all_masks):
         segments_sum = np.zeros((self.height, self.width), dtype='uint8')
         border_sum = np.zeros((self.height, self.width), dtype='uint8')
 
-        for mask_img in self.masks:
+        for instance in np.unique(all_masks):
+            if instance == 0:
+                continue
+            mask_img = np.zeros_like(all_masks)
+            mask_img[all_masks == instance] = 1
+            mask_img = mask_img.astype('uint8')
+
+            self.unknown_reg.disconnected_patches(region=mask_img)
+            self.unknown_reg.holes(region=mask_img)
+            
+            mask_img = largest_region(mask_img)
+            mask_img = fill_holes(mask_img)
+
             if mask_img.any():
-                mask_img = np.rint(mask_img / 255).astype('uint8')
                 segments_sum += mask_img
 
                 border = cv2.filter2D(mask_img, -1, self.kernel)
                 border = cv2.dilate(border, np.ones((5, 5), 'uint8'), iterations=self.border_thickness)
                 # make sure the border is on top of stone
-                border *= fill_holes(mask_img * 255) // 255
+                border *= mask_img  # fill_holes(mask_img * 255) // 255
                 # turn into 0 and 1
                 border = np.array(border, dtype=bool).astype("uint8")
 
