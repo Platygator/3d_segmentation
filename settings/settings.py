@@ -10,37 +10,40 @@ import numpy as np
 
 def load_camera_param(cam):
     if cam == "real":
-        CAM_MAT = np.array([[1577.1159987660135, 0, 676.7292997380368],
+        cam_mat = np.array([[1577.1159987660135, 0, 676.7292997380368],
                             [0, 1575.223362703865,  512.8101184300463],
                             [0, 0, 1]])
 
-        DIST_MAT = np.array([-0.46465317710098897, 0.2987490394355827, 0.004075959465516531, 0.005311175696501367])
+        dist_mat = np.array([-0.46465317710098897, 0.2987490394355827, 0.004075959465516531, 0.005311175696501367])
         # k1: -0.46465317710098897, k2: 0.2987490394355827, p1: 0.004075959465516531, p2: 0.005311175696501367
-        HEIGHT = 1080
-        WIDTH = 1440
+        # height = 1080
+        # width = 1440
+        height = 1080
+        width = 1440
     elif cam == "simulation":
-        CAM_MAT = np.array([[455, 0, 376],
+        cam_mat = np.array([[455, 0, 376],
                             [0, 455, 240],
                             [0.0, 0, 1]])
 
-        DIST_MAT = np.array([0.0, 0.0, 0.0, 0.0])
-        HEIGHT = 480
-        WIDTH = 752
+        dist_mat = np.array([0.0, 0.0, 0.0, 0.0])
+        height = 480
+        width = 752
 
-    return CAM_MAT, DIST_MAT, HEIGHT, WIDTH
+    return cam_mat, dist_mat, height, width
 
 
 # Chose camera parameters
-# camera = "real"
-camera = "simulation"
+camera = "real"
+# camera = "simulation"
 
 CAM_MAT, DIST_MAT, HEIGHT, WIDTH = load_camera_param(cam=camera)
 
-EXPERIMENT_NAME = "crf_all"
+EXPERIMENT_NAME = "real_1"
 
 # Define path to data and to specific data set
 DATA_PATH = "/Users/jan/Programming/PycharmProjects/master/3d_sets"
-DATA_SET = "simulation_3"
+DATA_SET = "real_1"
+# DATA_SET = "simulation_3"
 
 try:
     DATA_SET = DATA_SET[-1] + str(os.environ['SIM'])
@@ -79,4 +82,4 @@ BORDER_THICKNESS = 3    # thickness of border in final label
 UN_MAX_REFINEMENT_LOSS = 0.5     # percentage size change in refinement to be considered a unknown region
 UN_SMALL_THRESH = 500            # unknown class threshold for which a mask is considered a small region
 
-VISUALIZATION = False            # Show clustered point cloud in beginning and save all reprojection images
+VISUALIZATION = True            # Show clustered point cloud in beginning and save all reprojection images
