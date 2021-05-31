@@ -95,7 +95,7 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
     distance_map = np.linalg.norm(distance_map, axis=1)
     # distance_map = distance_map[:, 2]
 
-    save_distance = np.zeros_like(depth_map)
+    save_distance = np.zeros([height, width])
 
     save_index = np.zeros([height, width], dtype='uint')
 
@@ -121,6 +121,8 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
 
         visual_label_img = cv2.cvtColor(np.floor(visual_label_img*255).astype('uint8'), cv2.COLOR_BGR2RGB)
         cv2.imwrite(f"debug_images/visual_projection_{name}.png", visual_label_img)
+
+        np.save(f"debug_images/{name}_distance.npy", save_distance)
 
     return reprojection, save_distance
 
