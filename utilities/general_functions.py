@@ -103,14 +103,17 @@ def load_images(continue_generation: bool = False, data_path: str = DATA_PATH, p
     n_img = len(instance_names)
     for i, name in enumerate(instance_names):
         print(f"[INFO] Processing image {i+1} / {n_img} <- {name}")
+
+        # check if a label already exists
         if continue_generation and (name in label_names):
             continue
+
         image = cv2.imread(data_path + image_path + name + '.png', 1)
         try:
             depth_map = read_depth_map(data_path + depth_path + name + '.png.geometric.bin')
         except ValueError:
-            print(name)
-            yield None, None, None, None
+            print("[ERROR] Problem with: ", name)
+            depth_map = np.zeros_like(image[0, :, :])
         position = positions[name]
         yield image, position, depth_map, name
 
