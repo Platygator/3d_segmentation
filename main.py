@@ -34,7 +34,7 @@ if VISUALIZATION:
 # PROJECTION
 trans_mat = np.eye(4)
 lg = LabelGenerator()
-continue_generation = True
+continue_generation = False
 for image, position, depth_map, name in load_images(continue_generation):
 
     # build transformation matrix

@@ -50,6 +50,7 @@ cloud = remove_statistical_outliers(cloud=cloud, nb_neighbors=nb_neighbors, std_
 #                                   up=np.array([[0, -1.0, 0]], dtype='float64').T,
 #                                   front=np.array([[0.2, 0.7, -1.0]], dtype='float64').T,
 #                                   zoom=0.6)
+# quit()
 #
 # cloud.points = outlier_cloud.points
 # cloud.colors = outlier_cloud.colors
@@ -79,7 +80,7 @@ normals = np.asarray(cloud.normals)
 
 normal_reorientation = np.zeros([normals.shape[0], 1])
 for image, position, normal_map, name in load_images(depth_path="/normals/"):
-    if image is None:
+    if not normal_map.any():
         continue
     camera_center = np.array([[position[4], position[5], position[6]]])
     trans_mat = np.eye(4)
