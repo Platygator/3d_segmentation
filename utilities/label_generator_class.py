@@ -147,7 +147,7 @@ class LabelGenerator:
         self.masks = np.zeros([labels_present.shape[0], projection.shape[0], projection.shape[1]], dtype='uint8')
         distances = []
 
-        print("[INFO] Creating occlusion image")
+        print("[INFO]       Creating masks")
         for i, label in enumerate(labels_present):
             instance = np.zeros_like(projection)
             instance[np.where(projection == label)] = 255
@@ -208,6 +208,7 @@ class LabelGenerator:
         # plt.show()
 
         # REFINEMENT
+        print("[INFO]       Refining masks")
         all_masks_refined = crf_refinement(img=original, mask=all_mask, depth=depth,
                                            times=self.times, n_classes=len(labels_present),
                                            gsxy=self.gsxy, gcompat=self.gcompat,
@@ -225,6 +226,7 @@ class LabelGenerator:
         return all_masks_refined
 
     def _generate_label(self, all_masks):
+        print("[INFO]       Generating Label")
         if all_masks is None:
             self.label = np.zeros((self.height, self.width), dtype='uint8')
         else:
