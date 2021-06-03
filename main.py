@@ -25,11 +25,11 @@ except FileNotFoundError:
     print("[ERROR] No clustered files found")
     quit()
 
-# VISUALIZATION
-if VISUALIZATION:
-    origin_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
-        size=3, origin=[0, 0, 0])
-    o3d.visualization.draw_geometries([cloud, origin_frame], width=3000, height=1800, window_name="Origin Frame")
+# # VISUALIZATION
+# if VISUALIZATION:
+#     origin_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
+#         size=3, origin=[0, 0, 0])
+#     o3d.visualization.draw_geometries([cloud, origin_frame], width=3000, height=1800, window_name="Origin Frame")
 
 # PROJECTION
 trans_mat = np.eye(4)
@@ -57,4 +57,6 @@ for image, position, depth_map, name in load_images(continue_generation):
     projection, distance_map = reproject(points=cloud.points, color=cloud.colors, label=labels,
                                          transformation_mat=trans_mat, depth_map=depth_map,
                                          save_img=VISUALIZATION, name=name)
+    if VISUALIZATION:
+        np.save(f"debug_images/{name}_depth.npy", depth_map)
     lg.main(projection=projection, original=image, depth=depth_map, distance_map=distance_map, name=name)
