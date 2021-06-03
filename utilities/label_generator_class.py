@@ -222,7 +222,6 @@ class LabelGenerator:
         # self.unknown_reg.refinement_lost(before=instance_before, after=self.masks[i, :, :])
         # self.unknown_reg.small_region(region=self.masks[i, :, :])
 
-        print()
         return all_masks_refined
 
     def _generate_label(self, all_masks):
