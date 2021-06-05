@@ -151,24 +151,33 @@ class LabelGenerator:
         for i, label in enumerate(labels_present):
             instance = np.zeros_like(projection)
             instance[np.where(projection == label)] = 255
-            instance = cv2.dilate(instance, np.ones((5, 5), 'uint8'), iterations=self.growth_rate)
-            instance = cv2.erode(instance, np.ones((5, 5), 'uint8'), iterations=self.shrink_rate)
 
-            instance = largest_region(instance) if self.largest_only else instance
-            instance = fill_holes(instance) if self.fill else instance
+            instance = cv2.GaussianBlur(instance, (self.blur, self.blur), 0)
+            instance = cv2.threshold(instance, self.blur_thresh, 255, cv2.THRESH_BINARY)[1]
 
-            # instance_before = instance.copy()
-            # core = instance.copy()
+            instance = cv2.dilate(instance, np.ones((3, 3), 'uint8'), iterations=self.growth_rate)
+            instance = cv2.erode(instance, np.ones((3, 3), 'uint8'), iterations=self.shrink_rate)
 
-            blur = int(self.blur / 2500 * instance.nonzero()[0].shape[0])
-            blur = blur + 1 if blur % 2 == 0 else blur
-            instance = cv2.GaussianBlur(instance, (blur, blur), 0)
-
-            # core = cv2.GaussianBlur(core, (blur, blur), 0)
-            # core = cv2.threshold(core, 127, 255, cv2.THRESH_BINARY)[1]
-            # instance[core == 255] = 255
-
-            instance = cv2.threshold(instance, 127, 255, cv2.THRESH_BINARY)[1]
+            instance = cv2.GaussianBlur(instance, (self.blur, self.blur), 0)
+            instance = cv2.threshold(instance, self.blur_thresh, 255, cv2.THRESH_BINARY)[1]
+            # instance = cv2.dilate(instance, np.ones((5, 5), 'uint8'), iterations=self.growth_rate)
+            # instance = cv2.erode(instance, np.ones((5, 5), 'uint8'), iterations=self.shrink_rate)
+            # 
+            # instance = largest_region(instance) if self.largest_only else instance
+            # instance = fill_holes(instance) if self.fill else instance
+            # 
+            # # instance_before = instance.copy()
+            # # core = instance.copy()
+            # 
+            # blur = int(self.blur / 2500 * instance.nonzero()[0].shape[0])
+            # blur = blur + 1 if blur % 2 == 0 else blur
+            # instance = cv2.GaussianBlur(instance, (blur, blur), 0)
+            # 
+            # # core = cv2.GaussianBlur(core, (blur, blur), 0)
+            # # core = cv2.threshold(core, 127, 255, cv2.THRESH_BINARY)[1]
+            # # instance[core == 255] = 255
+            # 
+            # instance = cv2.threshold(instance, 127, 255, cv2.THRESH_BINARY)[1]
 
             self.masks[i, :, :] = instance.astype('uint8')
             distances.append(sum(distance_map[projection == label]) / distance_map[projection == label].shape[0])
@@ -214,7 +223,7 @@ class LabelGenerator:
                                            gsxy=self.gsxy, gcompat=self.gcompat,
                                            bsxy=self.bsxy, brgb=self.brgb, bcompat=self.bcompat,
                                            dsxy=self.dsxy, dddd=self.dddd, dcompat=self.dcompat)
-
+        self.unknown_reg.refinement_lost(all_mask, all_masks_refined)
         # import matplotlib.pyplot as plt
         # plt.imshow(all_masks_refined)
         # plt.show()
