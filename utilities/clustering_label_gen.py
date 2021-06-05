@@ -123,6 +123,7 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
         cv2.imwrite(f"debug_images/visual_projection_{name}.png", visual_label_img)
 
         np.save(f"debug_images/{name}_distance.npy", save_distance)
+        np.save(f"debug_images/{name}_depth.npy", depth_map)
 
     return reprojection, save_distance
 
