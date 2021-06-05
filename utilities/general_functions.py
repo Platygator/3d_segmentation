@@ -98,6 +98,7 @@ def load_images(continue_generation: bool = False, data_path: str = DATA_PATH, p
     :return: yield, image, position, depth_map and name
     """
     instance_names = [os.path.basename(k)[:-4] for k in glob(f'{data_path + image_path}*.png')]
+    np.random.shuffle(instance_names)
     if continue_generation:
         label_names = [os.path.basename(k)[:-4] for k in glob(f'{data_path + label_path}*.png')]
     n_img = len(instance_names)
