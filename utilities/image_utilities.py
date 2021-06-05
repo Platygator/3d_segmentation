@@ -56,8 +56,7 @@ def crf_refinement(img: np.ndarray, mask: np.ndarray, depth: np.ndarray, times: 
     #                        normalization=dcrf.NORMALIZE_SYMMETRIC)
     Q = d.inference(times)
     res = np.argmax(Q, axis=0).reshape((img.shape[0], img.shape[1]))
-    # res *= 255
-    # res = res.astype('uint8')
+
     return res
 
 
@@ -97,7 +96,7 @@ def largest_region(mask: np.ndarray) -> np.ndarray:
 def fill_holes(mask: np.ndarray) -> np.ndarray:
     if not mask.any():
         return mask
-    mask = np.pad(mask, [[1, 1], [1, 1]], constant_values=1)
+    # mask = np.pad(mask, [[1, 1], [1, 1]], constant_values=1)
     mask = cv2.bitwise_not(mask)
 
     connected, _ = ndimage.label(mask > 0)
@@ -108,7 +107,7 @@ def fill_holes(mask: np.ndarray) -> np.ndarray:
     for n in uni:
         closed_holes[np.where(connected == n)] = 255
 
-    closed_holes = closed_holes[1:-1, 1:-1]
+    # closed_holes = closed_holes[1:-1, 1:-1]
 
     return closed_holes
 
