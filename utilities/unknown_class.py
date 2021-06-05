@@ -41,11 +41,8 @@ class UnknownRegister:
     def new_label(self):
         self._label = np.zeros([self._height, self._width], dtype='uint8')
 
-    def create_label(self, label: np.ndarray):
-        label[self._label == self._unknown_label] = self._unknown_label
-        return label
-
     def retrieve_label_img(self):
+        self._label = cv2.dilate(self._label, np.ones((3, 3), 'uint8'), iterations=1)
         return self._label
 
     def refinement_lost(self, before: np.ndarray, after: np.ndarray):
@@ -55,9 +52,17 @@ class UnknownRegister:
         :param after:
         :return:
         """
-        diff = abs(before.nonzero()[0].shape[0] - after.nonzero()[0].shape[0]) / before.nonzero()[0].shape[0]
-        if diff >= self._max_refinement_loss:
-            self._label[before.nonzero()] = self._unknown_label
+        for label in np.unique(before):
+            if label == 0:
+                continue
+            before_inst = np.zeros_like(before, dtype='float16')
+            before_inst[before == label] = 1
+            after_inst = np.zeros_like(after, dtype='float16')
+            after_inst[after == label] = 1
+            diff = abs(before_inst.nonzero()[0].shape[0] - after_inst.nonzero()[0].shape[0])\
+                       / before_inst.nonzero()[0].shape[0]
+            if diff >= self._max_refinement_loss:
+                self._label[before_inst.nonzero()] = self._unknown_label
 
     def small_region(self, region: np.ndarray):
         if region.nonzero()[0].shape[0] <= self._small_treshold:
