@@ -57,6 +57,4 @@ for image, position, depth_map, name in load_images(continue_generation):
     projection, distance_map = reproject(points=cloud.points, color=cloud.colors, label=labels,
                                          transformation_mat=trans_mat, depth_map=depth_map,
                                          save_img=VISUALIZATION, name=name)
-    if VISUALIZATION:
-        np.save(f"debug_images/{name}_depth.npy", depth_map)
     lg.main(projection=projection, original=image, depth=depth_map, distance_map=distance_map, name=name)

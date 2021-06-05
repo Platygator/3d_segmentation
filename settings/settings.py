@@ -80,15 +80,15 @@ SHRINK_RATE = 5         # number of erosion steps after dilation
 LARGEST_ONLY = True     # use only the largest connected region for mask generation
 FILL = True             # fill holes for mask generation
 BLUR = 15                # blur applied to regions (region dependent)
-BLUR_THRESH = 125       # cutting off region here in binarization step
+BLUR_THRESH = 0       # cutting off region here in binarization step
 
 # CRF PARAM
-TIMES = 7               # repetitions of CRF
+TIMES = 6               # repetitions of CRF
 GSXY = 95                # standard deviation smoothness pixel position
 GCOMPAT = 1             # class compatibility gaussian
-BSXY = 50               # standard deviation colour ref pixel position
-BRGB = 1                # standard deviation colour
-BCOMPAT = 16            # class compatibility bilateral colour
+BSXY = 58               # standard deviation colour ref pixel position
+BRGB = 3                # standard deviation colour
+BCOMPAT = 75            # class compatibility bilateral colour
 DSXY = 74               # standard deviation depth ref pixel position
 DDDD = 20                # standard deviation depth
 DCOMPAT = 22            # class compatibility gaussian bilateral depth
@@ -100,4 +100,4 @@ BORDER_THICKNESS = 3    # thickness of border in final label
 UN_MAX_REFINEMENT_LOSS = 0.5     # percentage size change in refinement to be considered a unknown region
 UN_SMALL_THRESH = 500            # unknown class threshold for which a mask is considered a small region
 
-VISUALIZATION = True            # Show clustered point cloud in beginning and save all reprojection images
+VISUALIZATION = False            # Show clustered point cloud in beginning and save all reprojection images
