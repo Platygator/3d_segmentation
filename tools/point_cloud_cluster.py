@@ -19,16 +19,16 @@ from settings import DATA_PATH
 
 # cluster pre processing param
 normal_direction = np.array([0, 0, 1])
-step = 0.5
+step = 0.3
 
 # chose cluster method
 cluster_method = "kmeans"
 # cluster_method = "dbscan"
 
 # kmeans param
-k = 50  # 55
+k = 38  # 55
 # dbscan param
-epsilon = 1.0
+epsilon = 0.3
 
 
 # FILTER
