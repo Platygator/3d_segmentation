@@ -1,14 +1,11 @@
 """
-Created by Jan Schiffeler on 15.04.21
+Created by Jan Schiffeler on 15.04.12021
 jan.schiffeler[at]gmail.com
 
 Changed by
 
 
-
 Python 3.
-Library version:
-
 
 """
 
