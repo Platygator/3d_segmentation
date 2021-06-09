@@ -28,6 +28,14 @@ def load_camera_param(cam):
         dist_mat = np.array([0.0, 0.0, 0.0, 0.0])
         height = 480
         width = 752
+    elif cam == "simulation2":
+        cam_mat = np.array([[242.0212766, 0, 200],
+                            [0, 303.33333333, 160],
+                            [0.0, 0, 1]])
+
+        dist_mat = np.array([0.0, 0.0, 0.0, 0.0])
+        height = 320
+        width = 400
     elif cam == "real_small":
         cam_mat = np.array([[823.60502158, 0, 353.4030787530269],
                             [0, 700.09927231, 227.91560819021072],
@@ -37,8 +45,24 @@ def load_camera_param(cam):
         height = 480
         width = 752
     elif cam == "ximea":
-        cam_mat = np.array([[386.5767965, 0, 368.22744112],
-                            [0, 329.84952469, 236.82126874],
+        cam_mat = np.array([[386.5767965, 0, 368.54527058],
+                            [0, 329.84952469, 237.16582832],
+                            [0.0, 0, 1]])
+
+        dist_mat = np.array([0.0, 0.0, 0.0, 0.0])
+        height = 480
+        width = 752
+    elif cam == "ximea_4":
+        cam_mat = np.array([[393.164, 0, 368.54527058],
+                            [0, 286.297, 237.16582832],
+                            [0.0, 0, 1]])
+
+        dist_mat = np.array([0.0, 0.0, 0.0, 0.0])
+        height = 480
+        width = 752
+    elif cam == "ximea_3":
+        cam_mat = np.array([[382.462, 0, 368.54527058],
+                            [0, 245.193, 237.16582832],
                             [0.0, 0, 1]])
 
         dist_mat = np.array([0.0, 0.0, 0.0, 0.0])
@@ -49,19 +73,20 @@ def load_camera_param(cam):
 
 
 # Chose camera parameters
-camera = "real"
+# camera = "real"
 # camera = "real_small"
-# camera = "ximea"
-# camera = "simulation"
+camera = "ximea_3"
+# camera = "simulation2"
 
 CAM_MAT, DIST_MAT, HEIGHT, WIDTH = load_camera_param(cam=camera)
 
-EXPERIMENT_NAME = "real_1"
+EXPERIMENT_NAME = "real"
 
 # Define path to data and to specific data set
 DATA_PATH = "/Users/jan/Programming/PycharmProjects/master/3d_sets"
-DATA_SET = "real_1_full_sized"
-# DATA_SET = "simulation_3"
+# DATA_SET = "real_1_full_sized"
+DATA_SET = "real_3"
+# DATA_SET = "sim_8_half"
 
 try:
     DATA_SET = DATA_SET[-1] + str(os.environ['SIM'])
@@ -71,6 +96,10 @@ except KeyError:
 DATA_PATH = os.path.join(DATA_PATH, DATA_SET)
 
 print("[INFO] Starting 3D Label Generator for :", DATA_PATH)
+
+# (6, 79, 1, 7, 2, 51, 30, 20, 22)
+#
+# (45, 77, 5, 5, 1, 1, 3)
 
 
 # mask generation param
@@ -100,4 +129,4 @@ BORDER_THICKNESS = 3    # thickness of border in final label
 UN_MAX_REFINEMENT_LOSS = 0.5     # percentage size change in refinement to be considered a unknown region
 UN_SMALL_THRESH = 500            # unknown class threshold for which a mask is considered a small region
 
-VISUALIZATION = False            # Show clustered point cloud in beginning and save all reprojection images
+VISUALIZATION = True            # Show clustered point cloud in beginning and save all reprojection images
