@@ -50,10 +50,10 @@ def crf_refinement(img: np.ndarray, mask: np.ndarray, depth: np.ndarray, times: 
     depth * 255/depth.max()
     depth = depth.astype('uint8')
     depth = depth[:, :, np.newaxis].repeat(3, axis=2)
-    # d.addPairwiseBilateral(sxy=dsxy, srgb=dddd, rgbim=depth,
-    #                        compat=dcompat,
-    #                        kernel=dcrf.DIAG_KERNEL,
-    #                        normalization=dcrf.NORMALIZE_SYMMETRIC)
+    d.addPairwiseBilateral(sxy=dsxy, srgb=dddd, rgbim=depth,
+                           compat=dcompat,
+                           kernel=dcrf.DIAG_KERNEL,
+                           normalization=dcrf.NORMALIZE_SYMMETRIC)
     Q = d.inference(times)
     res = np.argmax(Q, axis=0).reshape((img.shape[0], img.shape[1]))
 
