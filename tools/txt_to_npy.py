@@ -49,5 +49,5 @@ cam_mat = np.array([[fx, 0, cx],
 #  the undistorting is now handled before colmap and thus the distortion coefficients are set to 0, but this could be
 #  changed here
 
-cam_dict = {"width": width, "height": height, "cam_mat": cam_mat, "dist_mat": np.array([0, 0, 0, 0])}
+cam_dict = {"width": int(width), "height": int(height), "cam_mat": cam_mat, "dist_mat": np.array([[0.0, 0, 0, 0]])}
 np.save(f"{DATA_PATH}/camera_info.npy", cam_dict)
