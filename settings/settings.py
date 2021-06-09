@@ -3,17 +3,23 @@ Created by Jan Schiffeler on 05.04.21
 jan.schiffeler[at]gmail.com
 
 Settings file for 3D Label Generator
+
+Running behaviour is changed on the top of this file.
+All parameters are set in their respected .json file. An explanation of all parameters is found on the bottom
+of this file.
 """
 import os
 import numpy as np
 import json
 
-EXPERIMENT_NAME = "real"
-data_set = "real_3"
-setting = "real_resized"
+# SETTINGS
+EXPERIMENT_NAME = "real"        # Name of experiment (relevant mainly for automated IoU calculations)
+data_set = "real_3"             # Which data set generate labels from
+setting = "real_resized"        # Which settings file to use (expected to be save in /settings/
+DATA_PATH = "/Users/jan/Programming/PycharmProjects/master/3d_sets"  # Path to parent folder of data sets
+VISUALIZATION = True            # Show clustered point cloud in beginning and save all reprojection images
+# SETTINGS
 
-# Define path to data and to specific data set
-DATA_PATH = "/Users/jan/Programming/PycharmProjects/master/3d_sets"
 
 DATA_PATH = os.path.join(DATA_PATH, data_set)
 
@@ -29,7 +35,7 @@ try:
     CAM_MAT = camera_settings["cam_mat"]
     DIST_MAT = camera_settings["dist_mat"]
 except FileNotFoundError:
-    print("[ERROR] If you're not running txt_to_npy, there will be an error soon :)")
+    print("[ERROR] If you're not running txt_to_npy.py, there will be an error soon :)")
 
 # mask generation param
 label_settings = settings["label_generation"]
@@ -59,8 +65,6 @@ BORDER_THICKNESS = settings["border_thickness"]    # thickness of border in fina
 # UNKNOWN PARAMETERS
 unknown_detector = settings["unknown_detector"]
 UN_MAX_REFINEMENT_LOSS = unknown_detector["max_refinement_loss"]   # percentage size change in refinement to be
-                                                                  # considered a unknown region
-UN_SMALL_THRESH = unknown_detector["small_threshold"]                 # unknown class threshold for which a mask is
-                                                                  # considered a small region
-
-VISUALIZATION = True            # Show clustered point cloud in beginning and save all reprojection images
+                                                                   # considered a unknown region
+UN_SMALL_THRESH = unknown_detector["small_threshold"]              # unknown class threshold for which a mask is
+                                                                   # considered a small region
