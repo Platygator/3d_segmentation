@@ -1,0 +1,27 @@
+{
+  "label_generation": {
+    "min_number": 77,
+    "growth_rate": 5,
+    "shrink_rate": 5,
+    "largest_only": true,
+    "fill": true,
+    "blur": 3,
+    "blur_thresh": 45
+  },
+  "crf": {
+    "times": 6,
+    "gsxy": 79,
+    "gcompat": 1,
+    "bsxy": 7,
+    "brgb": 2,
+    "bcompat": 51,
+    "dsxy": 30,
+    "dddd": 20,
+    "dcompat": 22
+  },
+  "border_thickness": 3,
+  "unknown_detector": {
+    "max_refinement_loss": 0.5,
+    "small_threshold": 500
+  }
+}
