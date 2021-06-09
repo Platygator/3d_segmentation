@@ -16,8 +16,9 @@ import numpy as np
 from settings import DATA_PATH
 
 colmap_images_file = f"{DATA_PATH}/images.txt"
+colmap_cameras_file = f"{DATA_PATH}/cameras.txt"
 
-save_dic = {}
+image_dict = {}
 # endings = ['09_05_' + str(k).zfill(5) for k in range(0, 7020, 20)]
 # bl = ['bl_' + str(k).zfill(12) for k in range(0, 7020, 20)]
 #
@@ -32,6 +33,21 @@ with open(colmap_images_file) as file:
             vec = np.array([float(k) for k in [rw, rx, ry, rz, tx, ty, tz]])
             name = name[:-5]
             # name = mapping[name]
-            save_dic[name] = vec
+            image_dict[name] = vec
 
-np.save(f"{DATA_PATH}/positions.npy", save_dic)
+np.save(f"{DATA_PATH}/positions.npy", image_dict)
+
+with open(colmap_cameras_file) as file:
+    line = [k for k in file.readlines() if k != ""][-1]
+    _, _, width, height, fx, fy, cx, cy = line.split(" ")
+
+cam_mat = np.array([[fx, 0, cx],
+                    [0, fy, cy],
+                    [0, 0, 1]], dtype="float32")
+
+# TODO In order to deal with size variations in depth and normal maps in colmap when using distorted images,
+#  the undistorting is now handled before colmap and thus the distortion coefficients are set to 0, but this could be
+#  changed here
+
+cam_dict = {"width": width, "height": height, "cam_mat": cam_mat, "dist_mat": np.array([0, 0, 0, 0])}
+np.save(f"{DATA_PATH}/camera_info.npy", cam_dict)
