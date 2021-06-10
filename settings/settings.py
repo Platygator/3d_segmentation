@@ -17,7 +17,7 @@ EXPERIMENT_NAME = "real"        # Name of experiment (relevant mainly for automa
 data_set = "real_3"             # Which data set generate labels from
 setting = "real_resized"        # Which settings file to use (expected to be save in /settings/
 DATA_PATH = "/Users/jan/Programming/PycharmProjects/master/3d_sets"  # Path to parent folder of data sets
-VISUALIZATION = True            # Show clustered point cloud in beginning and save all reprojection images
+VISUALIZATION = False            # Show clustered point cloud in beginning and save all reprojection images
 # SETTINGS
 
 
