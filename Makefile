@@ -15,7 +15,7 @@ all: venv
 venv: $(VENV)/bin/activate
 export PYTHONPATH=$PYTHONPATH:./
 
-generate:
+generate_fresh:
 	$(VENV)/bin/python3 ./tools/clear_results.py
 	$(VENV)/bin/python3 ./main.py
 	$(VENV)/bin/python3 ./tools/IoU.py
