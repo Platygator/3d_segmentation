@@ -23,7 +23,7 @@ import cv2
 # both = cv2.addWeighted(img, 0.4, label, 0.8, 0.0)
 
 
-cloud = o3d.io.read_point_cloud(f"{DATA_PATH}/pointclouds/fused.ply")
+cloud = o3d.io.read_point_cloud(f"{DATA_PATH}/pointclouds/clustered.ply")
 o3d.visualization.draw_geometries([cloud], width=3000, height=1800, window_name="Inspector")
 # name = "02_01_00600"
 # normal_map = read_depth_map(DATA_PATH + "/normals/" + name + '.png.geometric.bin')

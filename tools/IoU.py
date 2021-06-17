@@ -32,6 +32,7 @@ count = 0
 for label_name in label_names:
     label = cv2.imread(f'{DATA_PATH}/labels/{label_name}', 0)
     ground_truth = cv2.imread(f'{DATA_PATH}/ground_truth/{label_name}', 0)
+    # TODO handle the cases where no ground truth is available
 
     if label.any():
         count += 1

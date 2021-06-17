@@ -7,7 +7,6 @@ Changed by
 Segmentation of boulders using 3D reconstruction point clouds [photogrammetry]
 
 Python 3.8
-Library version:
 
 """
 
@@ -21,6 +20,7 @@ from settings import *
 try:
     cloud = o3d.io.read_point_cloud(f"{DATA_PATH}/pointclouds/clustered.ply")
     labels = np.load(f"{DATA_PATH}/pointclouds/labels.npy")
+    # TODO check for point cloud file
 except FileNotFoundError:
     print("[ERROR] No clustered files found")
     quit()
