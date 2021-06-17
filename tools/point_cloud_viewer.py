@@ -14,6 +14,6 @@ Library version:
 import open3d as o3d
 from settings import *
 
-cloud = o3d.io.read_point_cloud(f"{DATA_PATH}/pointclouds/clustered_old.ply")
+cloud = o3d.io.read_point_cloud(f"{DATA_PATH}/pointclouds/fused.ply")
 
 o3d.visualization.draw_geometries([cloud], width=3000, height=1800, window_name="Old")
