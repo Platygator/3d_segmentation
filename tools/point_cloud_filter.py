@@ -28,7 +28,7 @@ origin_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
 
 # remove outliers
 cloud = remove_statistical_outliers(cloud=cloud, nb_neighbors=nb_neighbors, std_ratio=std_ratio)
-o3d.io.write_point_cloud(f"{DATA_PATH}/pointclouds/filtered_point_cloud.ply", cloud)
+# o3d.io.write_point_cloud(f"{DATA_PATH}/pointclouds/filtered_point_cloud.ply", cloud)
 quit()
 # o3d.visualization.draw_geometries([cloud], width=3000, height=1800, window_name="Plane filtered",
 #                                   lookat=np.array([[0, 0, 2.0]], dtype='float64').T,
@@ -70,7 +70,7 @@ quit()
 #                                   front=np.array([[0.2, 0.7, -1.0]], dtype='float64').T,
 #                                   zoom=0.6)
 # quit()
-# # TODO think about using cylindrical ransac for center detection!
+
 o3d.visualization.draw_geometries([cloud], width=3000, height=1800, window_name="Clustered")
 
 cloud.estimate_normals()
