@@ -19,17 +19,17 @@ from settings import DATA_PATH
 
 # cluster pre processing param
 normal_direction = np.array([0, 0, 1])
-step = 0.3
+step = 0.2
 
 # chose cluster method
 cluster_method = "kmeans"
 # cluster_method = "dbscan"
 
 # kmeans param
-k = 38  # 55
+k = 9  # 55
 # dbscan param
 epsilon = 0.3
-
+new_normals = True
 
 # FILTER
 # load
@@ -42,10 +42,12 @@ except FileNotFoundError:
 origin_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
     size=3, origin=[0, 0, 0])
 
-cloud.estimate_normals()
+if new_normals:
+    cloud.estimate_normals()
 
-reoriented_normals = reorient_normals(normals=cloud.normals, direction=normal_direction)
-cloud.normals = reoriented_normals
+    reoriented_normals = reorient_normals(normals=cloud.normals, direction=normal_direction)
+    cloud.normals = reoriented_normals
+
 
 # normal_dir = o3d.geometry.TriangleMesh.create_box(width=0.2, height=0.2, depth=0.2)
 # normal_dir.paint_uniform_color([0.9, 0.1, 0.1])
