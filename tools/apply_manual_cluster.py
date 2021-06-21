@@ -32,11 +32,12 @@ for k in data['figures']:
         labels[key2label[k['objectKey']]] = labels[key2label[k['objectKey']]] + k['geometry']['indices']
 
 delete_point = labels['s99']
-labels.pop('s99')
+delete_point = set(delete_point)
+# labels.pop('s99')
 labeled_points = np.zeros([colours.shape[0]], dtype=int)
 for label, points in labels.items():
-    if label != 's99':
-        labeled_points[points] = label[1:]
+    valid = list(set(points) - delete_point)
+    labeled_points[valid] = label[1:]
 
 points = np.asarray(cloud.points)
 points = np.delete(points, labeled_points == 0, 0)
