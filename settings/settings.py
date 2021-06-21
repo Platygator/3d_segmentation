@@ -15,7 +15,7 @@ import json
 # SETTINGS
 EXPERIMENT_NAME = "real"        # Name of experiment (relevant mainly for automated IoU calculations)
 data_set = "real_9"             # Which data set generate labels from
-setting = "real_resized"        # Which settings file to use (expected to be save in /settings/
+setting = "real_ruben"        # Which settings file to use (expected to be save in /settings/
 DATA_PATH = "/Users/jan/Programming/PycharmProjects/master/3d_sets"  # Path to parent folder of data sets
 VISUALIZATION = True            # Show clustered point cloud in beginning and save all reprojection images
 # SETTINGS
