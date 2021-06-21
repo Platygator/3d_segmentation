@@ -26,10 +26,10 @@ cluster_method = "kmeans"
 # cluster_method = "dbscan"
 
 # kmeans param
-k = 9  # 55
+k = 15  # 55
 # dbscan param
 epsilon = 0.3
-new_normals = True
+new_normals = False
 
 # FILTER
 # load
