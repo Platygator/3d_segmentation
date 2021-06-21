@@ -14,7 +14,7 @@ import json
 
 # SETTINGS
 EXPERIMENT_NAME = "real"        # Name of experiment (relevant mainly for automated IoU calculations)
-data_set = "real_9"             # Which data set generate labels from
+data_set = "real_5"             # Which data set generate labels from
 setting = "real_ruben"        # Which settings file to use (expected to be save in /settings/
 DATA_PATH = "/Users/jan/Programming/PycharmProjects/master/3d_sets"  # Path to parent folder of data sets
 VISUALIZATION = False            # Show clustered point cloud in beginning and save all reprojection images
@@ -36,6 +36,11 @@ try:
     DIST_MAT = camera_settings["dist_mat"]
 except FileNotFoundError:
     print("[ERROR] If you're not running txt_to_npy.py, there will be an error soon :)")
+
+try:
+    os.mkdir(f"{DATA_PATH}/labels")
+except FileExistsError:
+    pass
 
 # mask generation param
 label_settings = settings["label_generation"]
