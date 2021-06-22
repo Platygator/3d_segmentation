@@ -15,7 +15,7 @@ import numpy as np
 import cv2
 from settings import DATA_PATH
 
-name = 'line_tb_107'
+name = 'pile_br_01'
 label_img = cv2.imread(f"{DATA_PATH}/labels/{name}.png")
 debug_projection = cv2.imread(f"debug_images/visual_projection_{name}.png")
 original_img = cv2.imread(f"{DATA_PATH}/images/{name}.png")
