@@ -21,7 +21,7 @@ from settings import *
 class LabelGenerator:
     """Handle all label instances"""
 
-    def __init__(self, border_thickness: int = BORDER_THICKNESS,
+    def __init__(self, border_thickness: int = BORDER_THICKNESS, mode: str = MODE,
                  growth_rate: int = GROWTH_RATE, shrink_rate: int = SHRINK_RATE,
                  min_number: int = MIN_NUMBER, blur: int = BLUR, blur_thresh: int = BLUR_THRESH,
                  gsxy: int = GSXY, gcompat: int = GCOMPAT,
@@ -94,6 +94,13 @@ class LabelGenerator:
                 print("[ERROR] Unknown keyword argument: ", argument)
 
         # LABEL GENERATION
+        if mode == "semantic":
+            self._generate_label = self.__generate_semantic_label
+        elif mode == "instance":
+            self._generate_label = self.__generate_instance_label
+        else:
+            print(f"[ERROR] {mode} is not a valid mode option!")
+            quit()
         self.kernel = np.array([[1, 1, 1],
                                 [1, -8, 1],
                                 [1, 1, 1]])
@@ -109,7 +116,6 @@ class LabelGenerator:
         self._clear()
         all_masks = self._generate_masks(projection=projection, original=original, depth=depth, distance_map=distance_map)
         self._generate_label(all_masks=all_masks)
-        self._apply_unknown()
         self._save(name=name)
 
     def _clear(self):
@@ -233,7 +239,7 @@ class LabelGenerator:
 
         return all_masks_refined
 
-    def _generate_label(self, all_masks):
+    def __generate_semantic_label(self, all_masks):
         print("[INFO]       Generating Label")
         if all_masks is None:
             self.label = np.zeros((self.height, self.width), dtype='uint8')
@@ -269,6 +275,11 @@ class LabelGenerator:
             self.label = np.array(segments_sum, dtype=bool).astype("uint8") + \
                          np.array(border_sum, dtype=bool).astype("uint8")
             self.label = np.rint(self.label * 127.5).astype('uint8')
+
+        self._apply_unknown()
+
+    def __generate_instance_label(self, all_masks):
+        self.label = all_masks
 
     def _apply_unknown(self):
         unknown = self.unknown_reg.retrieve_label_img()
