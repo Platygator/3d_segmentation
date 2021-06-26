@@ -24,7 +24,7 @@ def crf_refinement(img: np.ndarray, mask: np.ndarray, depth: np.ndarray, times: 
                    gsxy: int, gcompat: int,
                    bsxy: int, brgb: int, bcompat: int,
                    dsxy: int, dddd: int, dcompat: int,
-                   n_classes: int = 2) -> np.ndarray:
+                   n_classes: int) -> np.ndarray:
     """
     Based on this dudes code: https://github.com/seth814/Semantic-Shapes/blob/master/CRF%20Cat%20Demo.ipynb
     :param img: reprojected_cloud image
@@ -47,6 +47,7 @@ def crf_refinement(img: np.ndarray, mask: np.ndarray, depth: np.ndarray, times: 
                            compat=bcompat,
                            kernel=dcrf.DIAG_KERNEL,
                            normalization=dcrf.NORMALIZE_SYMMETRIC)
+    # TODO work on this Use normalization and cut of extremes
     depth * 255/depth.max()
     depth = depth.astype('uint8')
     depth = depth[:, :, np.newaxis].repeat(3, axis=2)
