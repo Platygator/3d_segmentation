@@ -169,8 +169,8 @@ class LabelGenerator:
             # instance = cv2.dilate(instance, np.ones((5, 5), 'uint8'), iterations=self.growth_rate)
             # instance = cv2.erode(instance, np.ones((5, 5), 'uint8'), iterations=self.shrink_rate)
             # 
-            # instance = largest_region(instance) if self.largest_only else instance
-            # instance = fill_holes(instance) if self.fill else instance
+            instance = largest_region(instance) if self.largest_only else instance
+            instance = fill_holes(instance) if self.fill else instance
             # 
             # # instance_before = instance.copy()
             # # core = instance.copy()
@@ -229,13 +229,10 @@ class LabelGenerator:
                                            gsxy=self.gsxy, gcompat=self.gcompat,
                                            bsxy=self.bsxy, brgb=self.brgb, bcompat=self.bcompat,
                                            dsxy=self.dsxy, dddd=self.dddd, dcompat=self.dcompat)
-        self.unknown_reg.refinement_lost(all_mask, all_masks_refined)
+        self.unknown_reg.refinement_lost(before=all_mask, after=all_masks_refined)
         # import matplotlib.pyplot as plt
         # plt.imshow(all_masks_refined)
         # plt.show()
-
-        # self.unknown_reg.refinement_lost(before=instance_before, after=self.masks[i, :, :])
-        # self.unknown_reg.small_region(region=self.masks[i, :, :])
 
         return all_masks_refined
 
@@ -279,7 +276,20 @@ class LabelGenerator:
         self._apply_unknown()
 
     def __generate_instance_label(self, all_masks):
-        self.label = all_masks
+        print("[INFO]       Generating Label")
+        if all_masks is None:
+            self.label = np.zeros((self.height, self.width), dtype='uint8')
+        else:
+            label = np.zeros_like(all_masks)
+            for instance_id in np.unique(all_masks):
+                if instance_id == 0:
+                    continue
+                mask_img = np.zeros_like(all_masks)
+                mask_img[all_masks == instance_id] = 1
+                mask_img = largest_region(mask_img)
+                mask_img = fill_holes(mask_img)
+                label[mask_img != 0] = instance_id
+        self.label = label
 
     def _apply_unknown(self):
         unknown = self.unknown_reg.retrieve_label_img()
