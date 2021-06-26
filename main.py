@@ -34,7 +34,8 @@ except FileNotFoundError:
 # PROJECTION
 trans_mat = np.eye(4)
 lg = LabelGenerator()
-continue_generation = False
+continue_generation = True
+# usually True as "make generate_fresh" deletes all files in labels first
 for image, position, depth_map, name in load_images(continue_generation):
 
     # build transformation matrix
