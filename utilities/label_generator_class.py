@@ -27,7 +27,7 @@ class LabelGenerator:
                  gsxy: int = GSXY, gcompat: int = GCOMPAT,
                  bsxy: int = BSXY, brgb: int = BRGB, bcompat: int = BCOMPAT,
                  dsxy: int = DSXY, dddd: int = DDDD, dcompat: int = DCOMPAT,
-                 times: int = TIMES, height: int = HEIGHT, width: int = WIDTH,
+                 times: int = TIMES, trust: float = TRUST, height: int = HEIGHT, width: int = WIDTH,
                  un_small_thresh: int = UN_SMALL_THRESH, un_max_refinement_loss: float = UN_MAX_REFINEMENT_LOSS,
                  data_path: str = DATA_PATH, fill: bool = FILL, largest_only: bool = LARGEST_ONLY):
         """
@@ -47,6 +47,7 @@ class LabelGenerator:
         :param dddd: standard deviation depth
         :param dcompat: class compatibility gaussian bilateral depth
         :param times: repetitions of CRF
+        :param trust: (0,1) trust in base
         :param height: image height
         :param width: image width
         :param un_small_thresh: unknown class threshold for which a mask is considered a small region
@@ -69,6 +70,7 @@ class LabelGenerator:
         self.blur_thresh = blur_thresh
         # crf
         self.times = times
+        self.trust = trust
         #   Gaussian
         self.gsxy = gsxy
         self.gcompat = gcompat
@@ -220,7 +222,7 @@ class LabelGenerator:
         # REFINEMENT
         print("[INFO]       Refining masks")
         all_masks_refined = crf_refinement(img=original, mask=all_mask, depth=depth,
-                                           times=self.times, n_classes=len(labels_present),
+                                           times=self.times, trust=self.trust, n_classes=len(labels_present),
                                            gsxy=self.gsxy, gcompat=self.gcompat,
                                            bsxy=self.bsxy, brgb=self.brgb, bcompat=self.bcompat,
                                            dsxy=self.dsxy, dddd=self.dddd, dcompat=self.dcompat)

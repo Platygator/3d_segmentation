@@ -14,7 +14,7 @@ import json
 
 # SETTINGS
 EXPERIMENT_NAME = "real"        # Name of experiment (relevant mainly for automated IoU calculations)
-data_set = "real_5"             # Which data set generate labels from
+data_set = "real_7"             # Which data set generate labels from
 setting = "real_ruben"        # Which settings file to use (expected to be save in /settings/
 DATA_PATH = "/Users/jan/Programming/PycharmProjects/master/3d_sets"  # Path to parent folder of data sets
 VISUALIZATION = False            # Show clustered point cloud in beginning and save all reprojection images
@@ -64,6 +64,7 @@ BCOMPAT = crf_settings["bcompat"]    # class compatibility bilateral colour
 DSXY = crf_settings["dsxy"]          # standard deviation depth ref pixel position
 DDDD = crf_settings["dddd"]          # standard deviation depth
 DCOMPAT = crf_settings["dcompat"]    # class compatibility gaussian bilateral depth
+TRUST = crf_settings["ground_trust"]
 
 # LABEL GENERATION
 BORDER_THICKNESS = settings["border_thickness"]    # thickness of border in final label

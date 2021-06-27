@@ -24,13 +24,14 @@ def crf_refinement(img: np.ndarray, mask: np.ndarray, depth: np.ndarray, times: 
                    gsxy: int, gcompat: int,
                    bsxy: int, brgb: int, bcompat: int,
                    dsxy: int, dddd: int, dcompat: int,
-                   n_classes: int) -> np.ndarray:
+                   n_classes: int, trust: float = 0.7) -> np.ndarray:
     """
     Based on this dudes code: https://github.com/seth814/Semantic-Shapes/blob/master/CRF%20Cat%20Demo.ipynb
     :param img: original image
     :param mask: label mask
     :param times: repetitions
     :param n_classes: number of classes (actually always 2 here)
+    :param trust: (0,1) trust in base
     :return: refined label image
     """
 
@@ -38,7 +39,7 @@ def crf_refinement(img: np.ndarray, mask: np.ndarray, depth: np.ndarray, times: 
     d = dcrf.DenseCRF2D(img.shape[1], img.shape[0], n_classes)
 
     # TODO play with ground_truth probability
-    unary = unary_from_labels(mask, n_classes, 0.7, zero_unsure=False)
+    unary = unary_from_labels(mask, n_classes, trust, zero_unsure=False)
 
     d.setUnaryEnergy(unary)
     d.addPairwiseGaussian(sxy=gsxy, compat=gcompat, kernel=dcrf.DIAG_KERNEL,

@@ -31,6 +31,7 @@ class Tuner(LabelGenerator):
         image, position, depth_map, name = next(load_images())
         self.img_original = image
         self.depth_img = depth_map
+        print("[ONGOING INVESTIGATION] DEPTH MEAN: ", np.mean(self.depth_img))
         self.mask = np.zeros([self.height, self.width])
         self.solo_label = np.zeros([self.height, self.width])
 
@@ -85,6 +86,8 @@ class Tuner(LabelGenerator):
         cv2.setTrackbarPos('D_sddd', 'Label Generator', self.dddd)
         cv2.createTrackbar('D_compat', "Label Generator", 1, 100, trackbar_function)
         cv2.setTrackbarPos('D_compat', 'Label Generator', self.dcompat)
+        cv2.createTrackbar('trust', "Label Generator", 1, 10, trackbar_function)
+        cv2.setTrackbarPos('trust', 'Label Generator', int(self.trust * 10))
 
         cv2.createTrackbar('blur_thresh', "Label Generator", 0, 255, trackbar_function)
         cv2.setTrackbarPos('blur_thresh', 'Label Generator', self.blur_thresh)
@@ -212,6 +215,7 @@ class Tuner(LabelGenerator):
         self.dsxy = cv2.getTrackbarPos("D_sxy", "Label Generator")
         self.dddd = cv2.getTrackbarPos("D_sddd", "Label Generator")
         self.dcompat = cv2.getTrackbarPos("D_compat", "Label Generator")
+        self.trust = cv2.getTrackbarPos("trust", "Label Generator")/10
 
     def read_all_filter_positions(self):
         self.blur_thresh = cv2.getTrackbarPos('blur_thresh', "Label Generator")
@@ -353,7 +357,8 @@ class Tuner(LabelGenerator):
             filter_img = cv2.bitwise_not((self.projection == instance) * cv2.bitwise_not(self.masks[i, :, :])) // 255
             self.visual_projection *= filter_img[:, :, np.newaxis].repeat(3, axis=2)
 
-        self.mask = self.masks[self.instance_to_show, :, :]
+        # TODO fix problem with going to far
+        self.mask = self.masks[self.instance_to_show_id, :, :]
 
     def progress_box(self, mode):
         if mode == "busy":

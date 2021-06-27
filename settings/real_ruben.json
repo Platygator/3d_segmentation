@@ -17,7 +17,8 @@
     "bcompat": 75,
     "dsxy": 74,
     "dddd": 4,
-    "dcompat": 23
+    "dcompat": 23,
+    "ground_trust": 0.7
   },
   "border_thickness": 3,
   "unknown_detector": {
