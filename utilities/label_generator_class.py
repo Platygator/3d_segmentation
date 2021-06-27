@@ -29,7 +29,7 @@ class LabelGenerator:
                  dsxy: int = DSXY, dddd: int = DDDD, dcompat: int = DCOMPAT,
                  times: int = TIMES, height: int = HEIGHT, width: int = WIDTH,
                  un_small_thresh: int = UN_SMALL_THRESH, un_max_refinement_loss: float = UN_MAX_REFINEMENT_LOSS,
-                 data_path: str = DATA_PATH, **kwargs):
+                 data_path: str = DATA_PATH, fill: bool = FILL, largest_only: bool = LARGEST_ONLY):
         """
         Constructor for LabelGenerator
         :param border_thickness: thickness of border in final label
@@ -82,16 +82,9 @@ class LabelGenerator:
         self.dcompat = dcompat
 
         # REGISTER PARAMETER SETTINGS
-        self.largest_only = False
-        self.fill = False
+        self.largest_only = largest_only
+        self.fill = fill
         self.graph_mask_thresh = 125
-        for argument, value in kwargs.items():
-            if argument == "largest" and value:
-                self.largest_only = True
-            elif argument == "fill" and value:
-                self.fill = True
-            else:
-                print("[ERROR] Unknown keyword argument: ", argument)
 
         # LABEL GENERATION
         if mode == "semantic":
@@ -112,9 +105,11 @@ class LabelGenerator:
                                            small_treshold=un_small_thresh, max_refinement_loss=un_max_refinement_loss)
         self.unknown_label = 50
 
-    def main(self, projection: np.ndarray, original: np.ndarray, depth: np.ndarray, distance_map: np.ndarray, name: str):
+    def main(self, projection: np.ndarray, original: np.ndarray, depth: np.ndarray,
+             distance_map: np.ndarray, name: str):
         self._clear()
-        all_masks = self._generate_masks(projection=projection, original=original, depth=depth, distance_map=distance_map)
+        all_masks = self._generate_masks(projection=projection, original=original,
+                                         depth=depth, distance_map=distance_map)
         self._generate_label(all_masks=all_masks)
         self._save(name=name)
 
