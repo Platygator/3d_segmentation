@@ -78,29 +78,18 @@ def graph_cut_refinement(img: np.ndarray, mask: np.ndarray, iter_count: int) -> 
 def largest_region(mask: np.ndarray) -> np.ndarray:
     if not mask.any():
         return mask
+    mask = np.pad(mask, [[1, 1], [1, 1]], constant_values=1)
     connected, _ = ndimage.label(mask > 0)
+    connected = connected[1:-1, 1:-1]
+    mask = mask[1:-1, 1:-1]
+
     uni, count = np.unique(connected, return_counts=True)
     uni = np.delete(uni, np.argmax(count))
     count = np.delete(count, np.argmax(count))
     largest_label = uni[np.argmax(count)]
-    largest_size = count.max()
-
-
-    uni = np.delete(uni, np.argmax(count))
-    count = np.delete(count, np.argmax(count))
-    if len(uni):
-        sec_largest_label = uni[np.argmax(count)]
-        sec_largest_size = count.max()
-    else:
-        sec_largest_size = 0
 
     largest_region = np.zeros_like(mask, dtype='uint8')
     largest_region[np.where(connected == largest_label)] = 255
-
-    # check how much smaller the second largest region is
-    # if it is still 20% of the size it is likely either a stone near the image border or a falsely split stone
-    if sec_largest_size/largest_size >= 0.2:
-        largest_region[np.where(connected == sec_largest_label)] = 255
 
     return largest_region
 
