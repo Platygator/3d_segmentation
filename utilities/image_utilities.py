@@ -27,7 +27,7 @@ def crf_refinement(img: np.ndarray, mask: np.ndarray, depth: np.ndarray, times: 
                    n_classes: int) -> np.ndarray:
     """
     Based on this dudes code: https://github.com/seth814/Semantic-Shapes/blob/master/CRF%20Cat%20Demo.ipynb
-    :param img: reprojected_cloud image
+    :param img: original image
     :param mask: label mask
     :param times: repetitions
     :param n_classes: number of classes (actually always 2 here)
@@ -37,6 +37,7 @@ def crf_refinement(img: np.ndarray, mask: np.ndarray, depth: np.ndarray, times: 
     n_classes += 1
     d = dcrf.DenseCRF2D(img.shape[1], img.shape[0], n_classes)
 
+    # TODO play with ground_truth probability
     unary = unary_from_labels(mask, n_classes, 0.7, zero_unsure=False)
 
     d.setUnaryEnergy(unary)
@@ -47,7 +48,7 @@ def crf_refinement(img: np.ndarray, mask: np.ndarray, depth: np.ndarray, times: 
                            compat=bcompat,
                            kernel=dcrf.DIAG_KERNEL,
                            normalization=dcrf.NORMALIZE_SYMMETRIC)
-    # TODO work on this Use normalization and cut of extremes
+    # TODO work on this - maybe use normalization and cut of extremes
     depth * 255/depth.max()
     depth = depth.astype('uint8')
     depth = depth[:, :, np.newaxis].repeat(3, axis=2)
