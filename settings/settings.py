@@ -1,5 +1,5 @@
 """
-Created by Jan Schiffeler on 05.04.21
+Created by Jan Schiffeler on 05.04.12021
 jan.schiffeler[at]gmail.com
 
 Settings file for 3D Label Generator
@@ -13,8 +13,8 @@ import numpy as np
 import json
 
 # SETTINGS
-EXPERIMENT_NAME = "real"        # Name of experiment (relevant mainly for automated IoU calculations)
-data_set = "real_7"             # Which data set generate labels from
+EXPERIMENT_NAME = "real_instance"        # Name of experiment (relevant mainly for automated IoU calculations)
+data_set = "real_6"             # Which data set generate labels from
 setting = "real_ruben"        # Which settings file to use (expected to be save in /settings/
 DATA_PATH = "/Users/jan/Programming/PycharmProjects/master/3d_sets"  # Path to parent folder of data sets
 VISUALIZATION = False            # Show clustered point cloud in beginning and save all reprojection images

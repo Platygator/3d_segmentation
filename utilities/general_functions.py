@@ -152,6 +152,4 @@ def IoU(label: np.ndarray, ground_truth: np.ndarray) -> (np.ndarray, float):
         if np.isnan(iou_per_instance[i]):
             print("Oh no")
 
-
-
     return iou_per_instance, np.mean(iou_per_instance)
