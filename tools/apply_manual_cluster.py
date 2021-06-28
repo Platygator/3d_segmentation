@@ -31,7 +31,10 @@ for k in data['figures']:
     else:
         labels[key2label[k['objectKey']]] = labels[key2label[k['objectKey']]] + k['geometry']['indices']
 
-delete_point = labels['s99']
+try:
+    delete_point = labels['s99']
+except KeyError:
+    delete_point = []
 delete_point = set(delete_point)
 # labels.pop('s99')
 labeled_points = np.zeros([colours.shape[0]], dtype=int)
