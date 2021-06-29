@@ -38,7 +38,6 @@ def crf_refinement(img: np.ndarray, mask: np.ndarray, depth: np.ndarray, times: 
     n_classes += 1
     d = dcrf.DenseCRF2D(img.shape[1], img.shape[0], n_classes)
 
-    # TODO play with ground_truth probability
     unary = unary_from_labels(mask, n_classes, trust, zero_unsure=False)
 
     d.setUnaryEnergy(unary)
@@ -49,8 +48,7 @@ def crf_refinement(img: np.ndarray, mask: np.ndarray, depth: np.ndarray, times: 
                            compat=bcompat,
                            kernel=dcrf.DIAG_KERNEL,
                            normalization=dcrf.NORMALIZE_SYMMETRIC)
-    # TODO work on this - maybe use normalization and cut of extremes
-    depth * 255/depth.max()
+    depth, _ = image_histogram_equalization(depth)
     depth = depth.astype('uint8')
     depth = depth[:, :, np.newaxis].repeat(3, axis=2)
     d.addPairwiseBilateral(sxy=dsxy, srgb=dddd, rgbim=depth,
@@ -61,6 +59,20 @@ def crf_refinement(img: np.ndarray, mask: np.ndarray, depth: np.ndarray, times: 
     res = np.argmax(Q, axis=0).reshape((img.shape[0], img.shape[1]))
 
     return res
+
+
+def image_histogram_equalization(image, number_bins=1000):
+    # from http://www.janeriksolem.net/2009/06/histogram-equalization-with-python-and.html
+
+    # get image histogram
+    image_histogram, bins = np.histogram(image.flatten(), number_bins, density=True)
+    cdf = image_histogram.cumsum() # cumulative distribution function
+    cdf = 100 * cdf / cdf[-1] # normalize
+
+    # use linear interpolation of cdf to find new pixel values
+    image_equalized = np.interp(image.flatten(), bins[:-1], cdf)
+
+    return image_equalized.reshape(image.shape), cdf
 
 
 def graph_cut_refinement(img: np.ndarray, mask: np.ndarray, iter_count: int) -> np.ndarray:
