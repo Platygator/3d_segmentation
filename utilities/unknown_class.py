@@ -9,9 +9,6 @@ Changed by
 Python 3.
 Library version:
 
-TODO:
-    - dilate unknown region
-    - get all regions before and after refinement to reimplement refinement loss check
 """
 
 import numpy as np
