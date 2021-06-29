@@ -14,11 +14,11 @@ import json
 
 # SETTINGS
 EXPERIMENT_NAME = "real_instance"        # Name of experiment (relevant mainly for automated IoU calculations)
-data_set = "real_6"             # Which data set generate labels from
+data_set = "real_4"             # Which data set generate labels from
 setting = "real_ruben"        # Which settings file to use (expected to be save in /settings/
 DATA_PATH = "/Users/jan/Programming/PycharmProjects/master/3d_sets"  # Path to parent folder of data sets
 VISUALIZATION = False            # Show clustered point cloud in beginning and save all reprojection images
-MODE = "instance"                # Produce 'instance' or 'semantic' segmentation labels
+MODE = "semantic"                # Produce 'instance' or 'semantic' segmentation labels
 # SETTINGS
 
 
@@ -42,6 +42,10 @@ try:
     os.mkdir(f"{DATA_PATH}/labels")
 except FileExistsError:
     pass
+
+MASK_PATH = f"{DATA_PATH}/mask.png"
+if not os.path.exists(MASK_PATH):
+    MASK_PATH = None
 
 # mask generation param
 label_settings = settings["label_generation"]
