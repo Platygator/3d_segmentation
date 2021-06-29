@@ -29,7 +29,8 @@ class LabelGenerator:
                  dsxy: int = DSXY, dddd: int = DDDD, dcompat: int = DCOMPAT,
                  times: int = TIMES, trust: float = TRUST, height: int = HEIGHT, width: int = WIDTH,
                  un_small_thresh: int = UN_SMALL_THRESH, un_max_refinement_loss: float = UN_MAX_REFINEMENT_LOSS,
-                 data_path: str = DATA_PATH, fill: bool = FILL, largest_only: bool = LARGEST_ONLY):
+                 data_path: str = DATA_PATH, fill: bool = FILL, largest_only: bool = LARGEST_ONLY,
+                 mask_img_path: str = MASK_PATH):
         """
         Constructor for LabelGenerator
         :param border_thickness: thickness of border in final label
@@ -107,25 +108,25 @@ class LabelGenerator:
                                            small_treshold=un_small_thresh, max_refinement_loss=un_max_refinement_loss)
         self.unknown_label = 50
 
+        # MASKING FOR DISTORTION
+        if MASK_PATH is not None:
+            self.distortion_mask = cv2.imread(mask_img_path, 0).astype('uint8') // 255
+        else:
+            self.distortion_mask = np.ones([self.height, self.width], dtype='uint8')
+
     def main(self, projection: np.ndarray, original: np.ndarray, depth: np.ndarray,
              distance_map: np.ndarray, name: str):
         self._clear()
         all_masks = self._generate_masks(projection=projection, original=original,
                                          depth=depth, distance_map=distance_map)
         self._generate_label(all_masks=all_masks)
+        self._add_distortion_background()
         self._save(name=name)
 
     def _clear(self):
         self.label = np.zeros([self.height, self.width])
         self.masks = None
         self.unknown_reg.new_label()
-
-    def _save(self, name: str):
-        """
-        :param name: name of the current image
-        :return:
-        """
-        cv2.imwrite(self.label_path + "/" + name + ".png", self.label)
 
     def _generate_masks(self, projection: np.ndarray, original: np.ndarray, depth: np.ndarray, distance_map: np.ndarray):
         """
@@ -270,7 +271,7 @@ class LabelGenerator:
                          np.array(border_sum, dtype=bool).astype("uint8")
             self.label = np.rint(self.label * 127.5).astype('uint8')
 
-        self._apply_unknown()
+        # self._apply_unknown()
 
     def __generate_instance_label(self, all_masks):
         print("[INFO]       Generating Label")
@@ -291,3 +292,15 @@ class LabelGenerator:
     def _apply_unknown(self):
         unknown = self.unknown_reg.retrieve_label_img()
         self.label[unknown != 0] = self.unknown_label
+
+    def _add_distortion_background(self):
+        """
+        Turn all parts padded with zero into background
+        """
+        self.label *= self.distortion_mask
+
+    def _save(self, name: str):
+        """
+        :param name: name of the current image
+        """
+        cv2.imwrite(self.label_path + "/" + name + ".png", self.label)
