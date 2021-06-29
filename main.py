@@ -17,13 +17,11 @@ from utilities import *
 from settings import *
 
 # LOADING
-try:
-    cloud = o3d.io.read_point_cloud(f"{DATA_PATH}/pointclouds/clustered.ply")
-    labels = np.load(f"{DATA_PATH}/pointclouds/labels.npy")
-    # TODO check for point cloud file
-except FileNotFoundError:
-    print("[ERROR] No clustered files found")
-    quit()
+assert os.path.exists(f"{DATA_PATH}/pointclouds/clustered.ply"), "[ERROR] No clustered files found"
+assert os.path.exists(f"{DATA_PATH}/pointclouds/labels.npy"), "[ERROR] No labels files found"
+
+cloud = o3d.io.read_point_cloud(f"{DATA_PATH}/pointclouds/clustered.ply")
+labels = np.load(f"{DATA_PATH}/pointclouds/labels.npy")
 
 # # VISUALIZATION
 # if VISUALIZATION:
