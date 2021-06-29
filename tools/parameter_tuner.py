@@ -10,6 +10,7 @@ Python 3.8
 """
 import cv2
 import numpy as np
+# np.random.seed(5)
 import json
 from datetime import datetime
 import open3d as o3d
@@ -77,17 +78,17 @@ class Tuner(LabelGenerator):
         cv2.createTrackbar('B_sxy', "Label Generator", 2, 100, trackbar_function)
         cv2.setTrackbarPos('B_sxy', 'Label Generator', self.bsxy)
         cv2.createTrackbar('B_srgb', "Label Generator", 2, 100, trackbar_function)
-        cv2.setTrackbarPos('B_srgb', 'Label Generator', self.brgb)
+        cv2.setTrackbarPos('B_srgb', 'Label Generator', int(self.brgb * 10))
         cv2.createTrackbar('B_compat', "Label Generator", 1, 100, trackbar_function)
         cv2.setTrackbarPos('B_compat', 'Label Generator', self.bcompat)
         cv2.createTrackbar('D_sxy', "Label Generator", 2, 100, trackbar_function)
         cv2.setTrackbarPos('D_sxy', 'Label Generator', self.dsxy)
         cv2.createTrackbar('D_sddd', "Label Generator", 2, 100, trackbar_function)
-        cv2.setTrackbarPos('D_sddd', 'Label Generator', self.dddd)
+        cv2.setTrackbarPos('D_sddd', 'Label Generator', int(self.dddd * 10))
         cv2.createTrackbar('D_compat', "Label Generator", 1, 100, trackbar_function)
         cv2.setTrackbarPos('D_compat', 'Label Generator', self.dcompat)
         cv2.createTrackbar('trust', "Label Generator", 1, 10, trackbar_function)
-        cv2.setTrackbarPos('trust', 'Label Generator', int(self.trust * 10))
+        cv2.setTrackbarPos('trust', 'Label Generator', int(self.trust * 100))
 
         cv2.createTrackbar('blur_thresh', "Label Generator", 0, 255, trackbar_function)
         cv2.setTrackbarPos('blur_thresh', 'Label Generator', self.blur_thresh)
@@ -148,6 +149,8 @@ class Tuner(LabelGenerator):
 
             elif k == ord("a"):
                 print("Creating full label")
+                self.read_all_filter_positions()
+                self.read_all_crf_positions()
                 self.progress_box(mode="busy")
                 self._clear()
                 all_masks = self._generate_masks(projection=self.projection, original=self.img_original,
@@ -191,7 +194,8 @@ class Tuner(LabelGenerator):
                         "bcompat": self.bcompat,
                         "dsxy": self.dsxy,
                         "dddd": self.dddd,
-                        "dcompat": self.dcompat
+                        "dcompat": self.dcompat,
+                        "ground_trust": self.trust
                     },
                     "border_thickness": 3,
                     "unknown_detector": {
@@ -210,12 +214,14 @@ class Tuner(LabelGenerator):
         self.gsxy = cv2.getTrackbarPos("G_sxy", "Label Generator")
         self.gcompat = cv2.getTrackbarPos("G_compat", "Label Generator")
         self.bsxy = cv2.getTrackbarPos("B_sxy", "Label Generator")
-        self.brgb = cv2.getTrackbarPos("B_srgb", "Label Generator")
+        self.brgb = cv2.getTrackbarPos("B_srgb", "Label Generator")/10
         self.bcompat = cv2.getTrackbarPos("B_compat", "Label Generator")
         self.dsxy = cv2.getTrackbarPos("D_sxy", "Label Generator")
-        self.dddd = cv2.getTrackbarPos("D_sddd", "Label Generator")
+        self.dddd = cv2.getTrackbarPos("D_sddd", "Label Generator")/10
         self.dcompat = cv2.getTrackbarPos("D_compat", "Label Generator")
-        self.trust = cv2.getTrackbarPos("trust", "Label Generator")/10
+        self.trust = cv2.getTrackbarPos("trust", "Label Generator")/100
+        self.trust = 0.999 if self.trust == 1 else self.trust
+        self.trust = 0.001 if self.trust == 0 else self.trust
 
     def read_all_filter_positions(self):
         self.blur_thresh = cv2.getTrackbarPos('blur_thresh', "Label Generator")
@@ -255,10 +261,10 @@ class Tuner(LabelGenerator):
                                compat=self.bcompat,
                                kernel=dcrf.DIAG_KERNEL,
                                normalization=dcrf.NORMALIZE_SYMMETRIC)
-        self.depth_img * 255 / self.depth_img.max()
-        depth_img = self.depth_img.astype('uint8')
-        depth_img = depth_img[:, :, np.newaxis].repeat(3, axis=2)
-        d.addPairwiseBilateral(sxy=self.dsxy, srgb=self.dddd, rgbim=depth_img,
+        depth, _ = image_histogram_equalization(self.depth_img)
+        depth = depth.astype('uint8')
+        depth = depth[:, :, np.newaxis].repeat(3, axis=2)
+        d.addPairwiseBilateral(sxy=self.dsxy, srgb=self.dddd, rgbim=depth,
                                compat=self.dcompat,
                                kernel=dcrf.DIAG_KERNEL,
                                normalization=dcrf.NORMALIZE_SYMMETRIC)
@@ -270,7 +276,9 @@ class Tuner(LabelGenerator):
 
     def update_crf(self):
         self.read_all_crf_positions()
+        # self.mask = cv2.GaussianBlur(self.mask, (101, 101), 0)
         self.solo_label = self.crf_refinement_single()
+        # self.solo_label = graph_cut_refinement(self.img_original, self.mask, 5)
         if self.solo_label.any():
             self.solo_label = largest_region(self.solo_label)
             self.solo_label = fill_holes(self.solo_label)
@@ -372,6 +380,19 @@ class Tuner(LabelGenerator):
 def trackbar_function(value):
     pass
 
+
+def image_histogram_equalization(image, number_bins=1000):
+    # from http://www.janeriksolem.net/2009/06/histogram-equalization-with-python-and.html
+
+    # get image histogram
+    image_histogram, bins = np.histogram(image.flatten(), number_bins, density=True)
+    cdf = image_histogram.cumsum() # cumulative distribution function
+    cdf = 100 * cdf / cdf[-1] # normalize
+
+    # use linear interpolation of cdf to find new pixel values
+    image_equalized = np.interp(image.flatten(), bins[:-1], cdf)
+
+    return image_equalized.reshape(image.shape), cdf
 
 if __name__ == '__main__':
     param_tool = Tuner()
