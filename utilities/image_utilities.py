@@ -26,7 +26,7 @@ def crf_refinement(img: np.ndarray, mask: np.ndarray, depth: np.ndarray, times: 
                    dsxy: int, dddd: int, dcompat: int,
                    n_classes: int, trust: float = 0.7) -> np.ndarray:
     """
-    Based on this dudes code: https://github.com/seth814/Semantic-Shapes/blob/master/CRF%20Cat%20Demo.ipynb
+    Based on: https://github.com/seth814/Semantic-Shapes/blob/master/CRF%20Cat%20Demo.ipynb
     :param img: original image
     :param mask: label mask
     :param times: repetitions
@@ -62,12 +62,21 @@ def crf_refinement(img: np.ndarray, mask: np.ndarray, depth: np.ndarray, times: 
 
 
 def image_histogram_equalization(image, number_bins=1000):
-    # from http://www.janeriksolem.net/2009/06/histogram-equalization-with-python-and.html
+    """
+    Normalize an image histogram
+
+    Based on: http://www.janeriksolem.net/2009/06/histogram-equalization-with-python-and.html
+
+    :param image: grey_scale image
+    :param number_bins: resolution
+    :return: normalized image
+    """
 
     # get image histogram
     image_histogram, bins = np.histogram(image.flatten(), number_bins, density=True)
-    cdf = image_histogram.cumsum() # cumulative distribution function
-    cdf = 100 * cdf / cdf[-1] # normalize
+    cdf = image_histogram.cumsum()
+    cdf = 100 * cdf / cdf[-1]  # 100 is arbitrary, it must be higher than one to keep sufficient information after
+    #                            being converted to int later
 
     # use linear interpolation of cdf to find new pixel values
     image_equalized = np.interp(image.flatten(), bins[:-1], cdf)
