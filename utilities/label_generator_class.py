@@ -92,8 +92,10 @@ class LabelGenerator:
         # LABEL GENERATION
         if mode == "semantic":
             self._generate_label = self.__generate_semantic_label
+            self.label_path = os.path.join(data_path, "labels")
         elif mode == "instance":
             self._generate_label = self.__generate_instance_label
+            self.label_path = os.path.join(data_path, "masks")
         else:
             print(f"[ERROR] {mode} is not a valid mode option!")
             quit()
@@ -101,7 +103,8 @@ class LabelGenerator:
                                 [1, -8, 1],
                                 [1, 1, 1]])
         self.border_thickness = border_thickness
-        self.label_path = os.path.join(data_path, "labels")
+
+
 
         # INTO THE UNKNOWN
         self.unknown_reg = UnknownRegister(width=width, height=height,

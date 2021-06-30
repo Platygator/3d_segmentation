@@ -17,11 +17,14 @@ import open3d as o3d
 import cv2
 import os
 from glob import glob
-from settings import DATA_PATH
+from settings import DATA_PATH, MODE
 from .image_utilities import read_depth_map
 
 IMAGES = "/images/"
-LABELS = "/labels/"
+if MODE == "semantic":
+    LABELS = "/labels/"
+elif MODE == "instance":
+    LABELS = "/masks/"
 DEPTH = "/depth/"
 POSE_DIC = os.path.join(DATA_PATH, "positions.npy")
 POSE_DIC = np.load(POSE_DIC, allow_pickle=True).item()

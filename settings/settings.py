@@ -14,7 +14,7 @@ import json
 
 # SETTINGS
 EXPERIMENT_NAME = "real_instance"        # Name of experiment (relevant mainly for automated IoU calculations)
-data_set = "real_4"             # Which data set generate labels from
+data_set = "real_9"             # Which data set generate labels from
 setting = "smaller_srgb_sddd"        # Which settings file to use (expected to be save in /settings/
 DATA_PATH = "/Users/jan/Programming/PycharmProjects/master/3d_sets"  # Path to parent folder of data sets
 VISUALIZATION = False            # Show clustered point cloud in beginning and save all reprojection images
@@ -40,6 +40,11 @@ except FileNotFoundError:
 
 try:
     os.mkdir(f"{DATA_PATH}/labels")
+except FileExistsError:
+    pass
+
+try:
+    os.mkdir(f"{DATA_PATH}/masks")
 except FileExistsError:
     pass
 
