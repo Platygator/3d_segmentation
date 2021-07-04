@@ -133,10 +133,16 @@ def IoU(label: np.ndarray, ground_truth: np.ndarray) -> (np.ndarray, float):
         gt_vals = [0, 1, 2]
     else:
         gt_vals = [0, 128, 255]
+
+    if label.max() == 2 or label.max() == 3:
+        lb_vals = [0, 1, 2]
+    else:
+        lb_vals = [0, 128, 255]
+
     iou_per_instance = np.zeros(3)
     # change ground truth at unknown spots to unknown
-    ground_truth[label == 50] = 50
-    for i, (instance_lab, instance_gt) in enumerate(zip([0, 128, 255], gt_vals)):
+    ground_truth[label == 50] = 3
+    for i, (instance_lab, instance_gt) in enumerate(zip(lb_vals, gt_vals)):
         org_instance = np.zeros_like(ground_truth)
         org_instance[np.where(ground_truth == instance_gt)] = 1
         rec_instance = np.zeros_like(label)
