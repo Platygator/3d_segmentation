@@ -24,6 +24,7 @@ if MODE == "semantic":
     img_names = [os.path.basename(k) for k in glob.glob(f"{DATA_PATH}/labels/*.png")]
 else:
     img_names = [os.path.basename(k) for k in glob.glob(f"{DATA_PATH}/masks/*.png")]
+    rand_col = np.random.random([200, 3])
 
 len_img = len(img_names)
 
@@ -46,9 +47,7 @@ for i, name in enumerate(img_names):
     else:
         label_img = cv2.imread(f"{DATA_PATH}/masks/{name}", 0)
         labels_present = np.unique(label_img)
-        rand_col = np.random.random(
-            [2 * len(labels_present), 3])  # produces more colours as sometimes labels get
-        rand_col[0, :] = [0, 0, 0]  # deleted and thus len != max_label_number
+        rand_col[0, :] = [0, 0, 0]
         mask_show = (rand_col[label_img.astype('uint8')] * 255).astype('uint8')
         result_viz = cv2.addWeighted(original_img, 0.3, mask_show, 0.7, 0.0)
         cv2.imwrite(f"{DATA_PATH}/masks/v_{name}", result_viz)
