@@ -23,7 +23,7 @@ kernel = np.array([[1, 1, 1],
                    [1, -8, 1],
                    [1, 1, 1]])
 
-with open("debug_images/real_2_gt.json") as f:
+with open("debug_images/label_test.json") as f:
 # with open("debug_images/own_iou_check.json") as f:
     data = json.load(f)
 
@@ -44,20 +44,20 @@ for img in data:
 
         segments_sum[mask != 0] = i
 
-    #     segments_sum += mask
-    #
-    #     border = cv2.filter2D(mask, -1, kernel)
-    #     border = cv2.dilate(border, np.ones((5, 5), 'uint8'), iterations=3)
-    #     # make sure the border is on top of stone
-    #     border *= mask
-    #     # turn into 0 and 1
-    #     border = np.array(border, dtype=bool).astype("uint8")
-    #
-    #     border_sum += border
-    #
-    # label = np.array(segments_sum, dtype=bool).astype("uint8") + \
-    #         np.array(border_sum, dtype=bool).astype("uint8")
-    # label = np.rint(label * 127.5).astype('uint8')
+        segments_sum += mask
 
-    label = segments_sum
-    cv2.imwrite(f"debug_images/masks/{img[:-6]}", label)
+        border = cv2.filter2D(mask, -1, kernel)
+        border = cv2.dilate(border, np.ones((5, 5), 'uint8'), iterations=3)
+        # make sure the border is on top of stone
+        border *= mask
+        # turn into 0 and 1
+        border = np.array(border, dtype=bool).astype("uint8")
+
+        border_sum += border
+
+    label = np.array(segments_sum, dtype=bool).astype("uint8") + \
+            np.array(border_sum, dtype=bool).astype("uint8")
+    label = np.rint(label * 127.5).astype('uint8')
+
+    # label = segments_sum
+    cv2.imwrite(f"debug_images/labels/{img[:-6]}", label)

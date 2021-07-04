@@ -17,17 +17,20 @@ from utilities import *
 from settings import DATA_PATH, CAM_MAT, DIST_MAT
 
 # rouge filter
-nb_neighbors = 5
-std_ratio = 0.2
+nb_neighbors = 3
+std_ratio = 0.5
 
 
-cloud = o3d.io.read_point_cloud(f"{DATA_PATH}/pointclouds/point_cloud.ply")
+cloud = o3d.io.read_point_cloud(f"{DATA_PATH}/pointclouds/cropped_8.ply")
 
 origin_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
     size=3, origin=[0, 0, 0])
 
 # remove outliers
 cloud = remove_statistical_outliers(cloud=cloud, nb_neighbors=nb_neighbors, std_ratio=std_ratio)
+o3d.visualization.draw_geometries([cloud], width=3000, height=1800, window_name="Filtered")
+o3d.io.write_point_cloud(f"{DATA_PATH}/pointclouds/filtered_point_cloud.ply", cloud)
+quit()
 # o3d.io.write_point_cloud(f"{DATA_PATH}/pointclouds/filtered_point_cloud.ply", cloud)
 # quit()
 # o3d.visualization.draw_geometries([cloud], width=3000, height=1800, window_name="Plane filtered",
