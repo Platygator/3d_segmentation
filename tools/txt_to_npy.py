@@ -39,7 +39,11 @@ np.save(f"{DATA_PATH}/positions.npy", image_dict)
 
 with open(colmap_cameras_file) as file:
     line = [k for k in file.readlines() if k != ""][-1]
-    _, _, width, height, fx, fy, cx, cy = line.split(" ")
+    try:
+        _, _, width, height, fx, fy, cx, cy = line.split(" ")
+    except ValueError:
+        _, _, width, height, fx, cx, cy = line.split(" ")
+        fy = fx
 
 cam_mat = np.array([[fx, 0, cx],
                     [0, fy, cy],
