@@ -90,6 +90,7 @@ class LabelGenerator:
         self.graph_mask_thresh = 125
 
         # LABEL GENERATION
+        self.mode = mode
         if mode == "semantic":
             self._generate_label = self.__generate_semantic_label
             self.label_path = os.path.join(data_path, "labels")
