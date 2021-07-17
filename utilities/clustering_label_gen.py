@@ -81,6 +81,13 @@ def reproject(points: np.ndarray, color: np.ndarray, label: np.ndarray,
     :return: image where each pixel has a label [0 = background]
     """
 
+    # TODO This projection technique was designed to handle sparse point clouds! When projecting the points back,
+    #      occlusion is not directly included so all points in frame will be written to the image plane in random order.
+    #      This means previously projected points might be overwritten by newer ones. With sparse point clouds this
+    #      basically never happened and could savely be ignored, but the dense point clouds might be problematic.
+    #      I suggest to project each label onto its own matrix. This adaptation will not be made as the presentation
+    #      of the thesis is already completed and the results should be reproducable. Maybe it is also not a problem
+    #      after all, since the morphological operations later on could just mask over it.
     R = transformation_mat[:3, :3]
     camera_center = transformation_mat[:3, 3]
     real_center = -1 * R.T.dot(camera_center.T)
