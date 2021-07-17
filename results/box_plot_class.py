@@ -18,9 +18,10 @@ import os
 import pandas as pd
 
 renamer = {"r18_base_r139": "ResNet18", "r18_base_umarked": "ResNet18 \nunknown",
-           "r50_r139_marked": "ResNet50 \nunknown", "r50_real_300": "ResNet50", "instance": "instance",
-           "semantic": "semantic", "instance_ep_16": "Generated", "huang": "Huang et al.",
-           "crf_all": "Label", "gt_train": "ResNet 18 \nGround Truth"}
+           "r50_r139_marked": "ResNet50 \nunknown", "r50_real_300": "ResNet50", "instance": "Instance",
+           "semantic": "Semantic", "instance_ep_16": "Mask R-CNN", "huang": "Huang et al.",
+           "crf_all": "crf Label", "gt_train": "ResNet18 \nGround Truth",
+           "new_sim": "Generated Label", "new_sim_train": "ResNet18 \nGenerated Label", "crf_all_train": "crf all Trained"}
 names = [k for k in glob.glob("label_test/*.npy")]
 results = [np.load(k, allow_pickle=True).item() for k in names]
 
@@ -48,16 +49,17 @@ df = pd.DataFrame(data, columns=['Run', 'Class', 'IoU'])
 # res_sort = dict(sorted(res.items(), key=lambda x: np.mean(x[1])))
 sns.set_theme(style="ticks")
 sns.boxplot(data=df, x='Run', y='IoU', hue='Class', width=0.4, whis=10,
-            order=["semantic", "instance"])
+            # order=["ResNet18 \nGround Truth", "Generated Label", "ResNet18 \nGenerated Label"])
+            order=["Semantic", "ResNet50"])
             # order=["ResNet50", "ResNet18", "ResNet18 \nunknown", "ResNet50 \nunknown"])
 
 
 # plt.xticks(plt.xticks()[0], [k for k in res_sort.keys()])
 
-plt.title("IoU Label")
+plt.title("IoU Label generator")
 plt.legend(loc="upper left")
 plt.xlabel("")
-plt.ylabel("mean IoU over all classes")
+plt.ylabel("mean IoU")
 plt.ylim([20, 100])
 # sns.despine(trim=True, left=True)
 # sns.boxplot(x="names", y="results", data=res,
