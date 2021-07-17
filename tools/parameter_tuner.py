@@ -32,7 +32,6 @@ class Tuner(LabelGenerator):
         image, position, depth_map, name = next(load_images())
         self.img_original = image
         self.depth_img = depth_map
-        print("[ONGOING INVESTIGATION] DEPTH MEAN: ", np.mean(self.depth_img))
         self.mask = np.zeros([self.height, self.width])
         self.solo_label = np.zeros([self.height, self.width])
 
@@ -88,7 +87,7 @@ class Tuner(LabelGenerator):
         cv2.createTrackbar('D_compat', "Label Generator", 1, 100, trackbar_function)
         cv2.setTrackbarPos('D_compat', 'Label Generator', self.dcompat)
         cv2.createTrackbar('trust', "Label Generator", 1, 10, trackbar_function)
-        cv2.setTrackbarPos('trust', 'Label Generator', int(self.trust * 100))
+        cv2.setTrackbarPos('trust', 'Label Generator', 7)
 
         cv2.createTrackbar('blur_thresh', "Label Generator", 0, 255, trackbar_function)
         cv2.setTrackbarPos('blur_thresh', 'Label Generator', self.blur_thresh)
@@ -156,10 +155,14 @@ class Tuner(LabelGenerator):
                 all_masks = self._generate_masks(projection=self.projection, original=self.img_original,
                                                  depth=self.depth_img, distance_map=self.distance_map)
                 self._generate_label(all_masks=all_masks)
-                rand_col = np.random.random(
-                    [2 * len(self.labels_present), 3])  # produces more colours as sometimes labels get
-                rand_col[0, :] = [0, 0, 0]  # deleted and thus len != max_label_number
-                mask_show = (rand_col[self.label.astype('uint8')] * 255).astype('uint8')
+                if self.mode == "instance":
+                    rand_col = np.random.random(
+                        [2 * len(self.labels_present), 3])  # produces more colours as sometimes labels get
+                    rand_col[0, :] = [0, 0, 0]  # deleted and thus len != max_label_number
+                    mask_show = (rand_col[self.label.astype('uint8')] * 255).astype('uint8')
+                else:
+                    mask_show = self.label.astype('uint8')
+                    mask_show = mask_show[:, :, np.newaxis].repeat(3, axis=2)
                 label_show = cv2.addWeighted(self.img_original, 0.3, mask_show, 0.7, 0.0)
 
                 scale = 1.5
@@ -219,7 +222,7 @@ class Tuner(LabelGenerator):
         self.dsxy = cv2.getTrackbarPos("D_sxy", "Label Generator")
         self.dddd = cv2.getTrackbarPos("D_sddd", "Label Generator")/10
         self.dcompat = cv2.getTrackbarPos("D_compat", "Label Generator")
-        self.trust = cv2.getTrackbarPos("trust", "Label Generator")/100
+        self.trust = cv2.getTrackbarPos("trust", "Label Generator")/10
         self.trust = 0.999 if self.trust == 1 else self.trust
         self.trust = 0.001 if self.trust == 0 else self.trust
 
@@ -282,6 +285,7 @@ class Tuner(LabelGenerator):
         if self.solo_label.any():
             self.solo_label = largest_region(self.solo_label)
             self.solo_label = fill_holes(self.solo_label)
+            # cv2.imwrite("crf.png", self.solo_label)
 
     def update_viewport(self):
         mask_show = self.mask
@@ -361,12 +365,15 @@ class Tuner(LabelGenerator):
                 empty_masks.append(i)
 
         self.visual_projection = self.visual_projection_save.copy()
+        # cv2.imwrite("visual_projection.png", self.visual_projection)
         for i, instance in enumerate(labels_present):
             filter_img = cv2.bitwise_not((self.projection == instance) * cv2.bitwise_not(self.masks[i, :, :])) // 255
             self.visual_projection *= filter_img[:, :, np.newaxis].repeat(3, axis=2)
 
         # TODO fix problem with going to far
+        # cv2.imwrite("debug_images/03_vis_occ_check.png", self.visual_projection)
         self.mask = self.masks[self.instance_to_show_id, :, :]
+        # cv2.imwrite("mask.png", self.mask)
 
     def progress_box(self, mode):
         if mode == "busy":
@@ -394,8 +401,7 @@ def image_histogram_equalization(image, number_bins=1000):
 
     return image_equalized.reshape(image.shape), cdf
 
+
 if __name__ == '__main__':
     param_tool = Tuner()
     param_tool.setup_window()
-
-
